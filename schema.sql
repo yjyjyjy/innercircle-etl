@@ -228,6 +228,7 @@ create table shadow_trade (
 	, collection_name varchar
 	, token_id int not null
 	, entry_price numeric not null
+	, entry_floor_price numeric
 	, entry_timestamp timestamp not null
 	, exit_price numeric
 	, exit_timestamp timestamp
@@ -238,6 +239,7 @@ create table shadow_trade (
 )
 ;
 create unique index "shadow_trade_unique_idx_insider_id_col_id_token_id_entry_ts" ON shadow_trade(insider_id, collection_id, token_id, entry_timestamp);
+
 
 
 
