@@ -226,7 +226,7 @@ create table shadow_trade (
 	, insider_id varchar not null
 	, collection_id varchar not null
 	, collection_name varchar
-	, token_id int not null
+	, token_id varchar not null
 	, entry_price numeric not null
 	, entry_floor_price numeric
 	, entry_timestamp timestamp not null
@@ -240,8 +240,17 @@ create table shadow_trade (
 ;
 create unique index "shadow_trade_unique_idx_insider_id_col_id_token_id_entry_ts" ON shadow_trade(insider_id, collection_id, token_id, entry_timestamp);
 
-
-
+drop table if exists shadow_trade_summary;
+create table shadow_trade_summary (
+	insider_id varchar
+	, collection_id varchar
+	, entry_timestamp timestamp
+	, profit_or_loss numeric
+	, primary key (insider_id, collection_id)
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
+)
+;
 
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (
