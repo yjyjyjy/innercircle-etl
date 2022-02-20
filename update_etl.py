@@ -494,7 +494,7 @@ def update_owner_collection_total_worth():  # each owner's worth by each contrac
 
 def update_circle_insider():  # insider_to_circle_mapping
     sql = """
-insert into insider
+insert into insider (id)
 select owner as id
 from owner_collection_total_worth source
 left join insider target

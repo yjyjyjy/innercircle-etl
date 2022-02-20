@@ -106,6 +106,11 @@ create table nft_trx_union (
 	caller_is_receiver BOOLEAN
 )
 ;
+create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
+create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
+create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
+create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
+create index nft_trx_union_idx_action on nft_trx_union (action);
 
 create table nft_ownership (
 	contract varchar,
@@ -210,28 +215,31 @@ create table circle (
 create table insider (
 	id varchar PRIMARY KEY
 	, ens varchar
-	, instagram_username varchar
 	, twitter_username varchar
+	, instagram_username varchar
 );
 
 -- the trade to track how smart a trader is. It's shadow trade because we track the floor price when they enter and exit instead of the real profit/loss. NFT is hard to value with traits considered.
 drop table if exists shadow_trade;
 create table shadow_trade (
 	shadow_trade_id serial primary key
-	, user_id varchar not null
+	, insider_id varchar not null
 	, collection_id varchar not null
 	, collection_name varchar
 	, token_id int not null
 	, entry_price numeric not null
-	, entry_date date not null
+	, entry_timestamp timestamp not null
 	, exit_price numeric
-	, exit_date date
+	, exit_timestamp timestamp
 	, latest_price numeric not null
-	, profit_or_loss numeric numeric not null -- profit or loss
-	, foreign key (user_id) references insider(id)
+	, profit_or_loss numeric not null -- profit or loss
+	, foreign key (insider_id) references insider(id)
 	, foreign key (collection_id) references collection(id)
 )
 ;
+create unique index "shadow_trade_unique_idx_insider_id_col_id_token_id_entry_ts" ON shadow_trade(insider_id, collection_id, token_id, entry_timestamp);
+
+
 
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (
@@ -302,11 +310,7 @@ create index eth_token_transfers_2022_idx_contract on eth_token_transfers_2022 (
 create index nft_trades_idx_timestamp on nft_trades (timestamp desc);
 create index nft_trades_idx_nft_contract on nft_trades (nft_contract);
 
-create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
-create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
-create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
-create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
-create index nft_trx_union_idx_action on nft_trx_union (action);
+
 
 create index nft_ownership_idx_owner on nft_ownership (owner);
 create index nft_ownership_idx_contract on nft_ownership (contract);
