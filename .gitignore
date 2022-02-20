@@ -1,0 +1,11 @@
+*.csv
+.DS_Store
+.env
+__pycache__/
+.ipynb_checkpoints/
+google_bigquery_credential.json
+
+node_modules/
+
+crontab
+log.txt
