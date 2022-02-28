@@ -296,6 +296,12 @@ create table post (
 	, foreign key (collection_id) references collection(id)
 );
 
+create table subscriber (
+	id serial primary key
+	, email varchar
+);
+create unique index "subscriber_unique_idx_email" ON subscriber(email);
+
 create index eth_contracts_idx_timestamp on eth_contracts (timestamp desc);
 create index eth_contracts_idx_is_nft on eth_contracts (is_nft);
 create index eth_contracts_idx_address on eth_contracts (address);
