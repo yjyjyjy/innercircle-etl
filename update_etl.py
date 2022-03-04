@@ -506,16 +506,15 @@ def update_owner_collection_total_worth():  # each owner's worth by each contrac
 
 def update_circle_insider():  # insider_to_circle_mapping
     sql = """
-insert into insider_to_circle_mapping
+
+drop table if exists insider_staging;
+create table insider_staging as
 select
     owner as insider_id
     , owner_rank
     , 1 as circle -- 'top 200 whales'
-    , date(now() - interval '1 day') as created_at
-    , true as is_current
 from owner_collection_total_worth
-where owner_rank <= 200
-    and date(now() - interval '1 day') > (select max(created_at) from insider_to_circle_mapping)
+where 1=1
     and owner in ( -- making sure the top 3 most valuable collections not excceeding 90% total worth
         select
             owner
@@ -524,12 +523,17 @@ where owner_rank <= 200
         group by 1
         having sum(collection_pct_total) < 0.9
     )
-group by 1,2,3,4
+group by 1,2,3
+order by owner_rank
+limit 200
 ;
 
-update insider_to_circle_mapping
-set is_current = true
-where created_at = (select max(created_at) from insider_to_circle_mapping)
+insert into insider (id)
+select source.insider_id as id
+from insider_staging source
+left join insider target
+    on source.insider_id = target.id
+where target.id is null
 ;
 
 update insider_to_circle_mapping
@@ -537,14 +541,25 @@ set is_current = false
 where created_at < (select max(created_at) from insider_to_circle_mapping)
 ;
 
-insert into insider (id)
-select source.insider_id as id
-from insider_to_circle_mapping source
-left join insider target
-    on source.insider_id = target.id
-where source.is_current
-    and target.id is null
+delete from insider_to_circle_mapping where is_current;
+
+insert into insider_to_circle_mapping
+select
+    insider_id
+    , owner_rank
+    , circle
+    , date(now() - interval '1 day') as created_at
+    , true as is_current
+from insider_staging
 ;
+
+update insider_to_circle_mapping
+set is_current = true
+where created_at = (select max(created_at) from insider_to_circle_mapping)
+;
+
+drop table if exists insider_staging;
+
     """
     utl.query_postgres(sql=sql)
 
