@@ -442,6 +442,9 @@ def update_owner_collection_total_worth():  # each owner's worth by each contrac
                     , '0x0000000000000000000000000000000000000001'
                     , '0xe052113bd7d7700d623414a0a4585bcae754e9d5' -- nifty-gateway-omnibus
                     )
+                and o.contract not in (
+                    '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85' -- ENS
+                    )
             group by 1,2,3
         )
         , owner_collection_worth as (
@@ -491,18 +494,18 @@ def update_owner_collection_total_worth():  # each owner's worth by each contrac
 
 ######################### Insider, circles, insights, Posts #########################
 
+# insert into insider (id)
+# select owner as id
+# from owner_collection_total_worth source
+# left join insider target
+#     on source.owner = target.id
+# where source.owner_rank <= 200
+#     and target.id is null
+# group by 1;
+
 
 def update_circle_insider():  # insider_to_circle_mapping
     sql = """
-insert into insider (id)
-select owner as id
-from owner_collection_total_worth source
-left join insider target
-    on source.owner = target.id
-where source.owner_rank <= 200
-    and target.id is null
-group by 1;
-
 insert into insider_to_circle_mapping
 select
     owner as insider_id
@@ -513,6 +516,14 @@ select
 from owner_collection_total_worth
 where owner_rank <= 200
     and date(now() - interval '1 day') > (select max(created_at) from insider_to_circle_mapping)
+    and owner in ( -- making sure the top 3 most valuable collections not excceeding 90% total worth
+        select
+            owner
+        from owner_collection_total_worth
+        where rnk <= 3
+        group by 1
+        having sum(collection_pct_total) < 0.9
+    )
 group by 1,2,3,4
 ;
 
@@ -524,6 +535,15 @@ where created_at = (select max(created_at) from insider_to_circle_mapping)
 update insider_to_circle_mapping
 set is_current = false
 where created_at < (select max(created_at) from insider_to_circle_mapping)
+;
+
+insert into insider (id)
+select source.insider_id as id
+from insider_to_circle_mapping source
+left join insider target
+    on source.insider_id = target.id
+where source.is_current
+    and target.id is null
 ;
     """
     utl.query_postgres(sql=sql)
@@ -547,6 +567,7 @@ with cet as (
     where action in ('mint', 'trade')
         and c.is_current -- current insiders only
         and t.timestamp > (select max(timestamp) from insight_trx)
+        and t.eth_value_per_token > 0 -- making sure they actually spent their eth
     union all
     select
         insider_id
