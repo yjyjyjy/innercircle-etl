@@ -410,11 +410,12 @@ def update_nft_contract_floor_price(date):
             , contract
             , percentile_disc(0.1) within group (order by eth_value_per_token)
         from nft_trx_union
-        where timestamp >= date('{date}') - interval'7 days'
+        where timestamp >= date('{date}')
             and timestamp < date('{date}') + interval'1 days'
             and action = 'trade'
         group by 1,2
-        having count(distinct trx_hash) >= 5  -- having more than 5 trades
+        ;
+        --  having count(distinct trx_hash) >= 2  -- having more than 2 trades
     """
     utl.query_postgres(sql)
 

@@ -275,6 +275,25 @@ def get_terminal_ts(table, end, offset=None, key="timestamp"):
     print("⏱ Terminal ts retrieved: " + str(ts))
     return ts
 
+def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp"):
+    dates = get_date_list(start_date=start_date, end_date=end_date)
+    end_date_clause = f"and {key} <= '{end_date}'" if end_date != None else ""
+    sql = f"""
+        select cast(date({key}) as varchar) as date
+        from {table}
+        where {key} >= '{start_date}'
+            {end_date_clause}
+        group by 1
+    """
+    uploaded = query_postgres(sql, columns=["date"])
+    uploaded = uploaded.date.to_list()
+
+    gaps = [date for date in dates if date not in uploaded]
+    gaps.sort()
+    print(f"🦄🦄: {table} gaps:")
+    print(gaps)
+    return gaps
+
 
 # **********************************************************
 # ****************** ABI and contract obj ******************
