@@ -9,7 +9,7 @@ import psycopg2 as pg2
 import json
 import requests
 from web3 import Web3
-from const import OPENSEA_TRADING_CONTRACT, PATHS
+from const import OPENSEA_TRADING_CONTRACT_V1, PATHS
 
 load_dotenv(".env")
 ABSOLUTE_PATH = os.environ.get("ABSOLUTE_PATH")
@@ -294,7 +294,6 @@ def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp")
     print(gaps)
     return gaps
 
-
 # **********************************************************
 # ****************** ABI and contract obj ******************
 # **********************************************************
@@ -338,11 +337,11 @@ def get_opensea_contract():
     abi_filename = "abi_opensea.json"
     search = glob.glob("./" + abi_filename)
     if len(search) == 0:
-        abi = fetch_abi(OPENSEA_TRADING_CONTRACT, json_file=abi_filename)
+        abi = fetch_abi(OPENSEA_TRADING_CONTRACT_V1, json_file=abi_filename)
     else:
         abi = load_abi_json(abi_filename)
 
-    contract = create_contract_obj(OPENSEA_TRADING_CONTRACT, abi)
+    contract = create_contract_obj(OPENSEA_TRADING_CONTRACT_V1, abi)
     return contract
 
 

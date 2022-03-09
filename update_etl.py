@@ -1,6 +1,6 @@
 import pandas as pd
 import etl_utls as utl
-from const import OPENSEA_TRADING_CONTRACT
+from const import OPENSEA_TRADING_CONTRACT_V1
 import time
 
 
@@ -74,7 +74,7 @@ def update_nft_trade_opensea(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_up
             , input as input_data
         from `bigquery-public-data.crypto_ethereum.transactions` trx
         where date(block_timestamp) = date('{date}')
-            and to_address='{OPENSEA_TRADING_CONTRACT}'
+            and to_address='{OPENSEA_TRADING_CONTRACT_V1}'
             and receipt_status = 1
     """
 
@@ -303,7 +303,9 @@ def update_nft_trx_union(year=None, use_upsert=True):
                 trans.*
                 , trx.eth_value
                 , trx.from_address=trans.to_address as caller_is_receiver
-                , trx.to_address='0x7be8076f4ea4a4ad08075c2508e481d6c946d12b' as to_address_is_opensea
+                , trx.to_address in ('0x7be8076f4ea4a4ad08075c2508e481d6c946d12b' --as to_address_is_opensea
+                                    , '0x7f268357a8c2552623316e2562d90e642bb538e5' -- OpenSea: Wyvern Exchange v2\
+                                    )
             from eth_token_transfers_{year} trans
             join eth_contracts con
                 on con.address = trans.contract
