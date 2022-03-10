@@ -5,6 +5,7 @@ import json
 from web3 import Web3
 import os
 import glob
+import requests
 import pandas as pd
 infura_endpoint = os.environ.get("INFURA_ENDPOINT")
 w3 = Web3(Web3.HTTPProvider(infura_endpoint))
@@ -56,7 +57,7 @@ def get_opensea_contract():
     else:
         abi = load_abi_json(OPENSEA_V1_ABI_FILENAME)
 
-    contract = create_contract_obj(OPENSEA_V1_ABI_FILENAME, abi)
+    contract = create_contract_obj(OPENSEA_TRADING_CONTRACT_V1, abi)
     return contract
 
 
@@ -131,15 +132,19 @@ def get_opensea_trade_price(date):
         , axis = 'columns', result_type='expand')
     price = pd.concat([df, mod], axis = 1)[['trx_hash', 0]]
     price.columns = ['trx_hash', 'price']
+    price = price.groupby('trx_hash')['price'].sum().reset_index()
     return price
 
 def get_opensea_trade_currency(date):
-    print("🦄🦄 getting get nft trade currency from eth trx: " + date)
+    print("🦄🦄 getting get nft trade currency fro: " + date)
     sql = f'''
         select
             block_timestamp as `timestamp`
             , trx.`hash` as trx_hash
             , value/pow(10,18) as eth_value
+            , case when to_address = '{OPENSEA_TRADING_CONTRACT_V1}' then 'opensea v1'
+                when to_address = '{OPENSEA_TRADING_CONTRACT_V2}' then 'opensea v2'
+                end as platform
             , input as input_data
         from `bigquery-public-data.crypto_ethereum.transactions` trx
         where date(block_timestamp) = date('{date}')
@@ -153,6 +158,6 @@ def get_opensea_trade_currency(date):
     df = utl.download_from_google_bigquery(sql)
     contract = get_opensea_contract()
     mod = df.apply(lambda row: decode_opensea_trade_to_extract_currency(row.input_data, contract), axis = 'columns', result_type='expand')
-    currency = pd.concat([df, mod], axis = 1)[['timestamp','trx_hash','eth_value', 0]]
-    currency.columns = [['timestamp','trx_hash','eth_value', 'payment_token']]
+    currency = pd.concat([df, mod], axis = 1)[['timestamp','trx_hash','eth_value', 0, 'platform']]
+    currency.columns = ['timestamp','trx_hash','eth_value', 'payment_token', 'platform']
     return currency

@@ -63,60 +63,15 @@ def update_token_transfers(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_upse
         key="trx_hash",
     )
 
-def get_nft_trade_price(date):
-    print("🦄🦄 getting get nft trade price from eth trx log: " + date)
-    sql = f'''
-    SELECT
-        transaction_hash as trx_hash
-        , data
-        , topics
-    FROM `bigquery-public-data.crypto_ethereum.logs`
-    WHERE DATE(block_timestamp) = '{date}'
-        and address in ('{OPENSEA_TRADING_CONTRACT_V1}' -- OpenSea: Wyvern Exchange v1
-            , '{OPENSEA_TRADING_CONTRACT_V2}' -- OpenSea: Wyvern Exchange v2
-            )
-        and topics[ORDINAL(1)] like '0xc4109843%' -- OrdersMatched event
-    ;
-    '''
-    df = utl.download_from_google_bigquery(sql)
-    mod = df.apply(lambda row: dec.decode_opensea_trade_log_to_extract_price(row.data, row.topics)
-        , axis = 'columns', result_type='expand')
-    price = pd.concat([df, mod], axis = 1)[['trx_hash', 0]]
-    price.columns = ['trx_hash', 'price']
-    return price
-
 
 # Decode the trades transactions from opensea each day.
 # Schema: ["timestamp", "transaction_hash", "eth_value", "nft_contract", "token_id", "buyer", "seller", "platform"]
 def update_nft_trade_opensea(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_upsert=True):
     print("🦄🦄 processing nft_trades opensea for " + date)
-
-    sql = f"""
-        select
-            block_timestamp as `timestamp`
-            , trx.`hash` as trx_hash
-            , value/pow(10,18) as eth_value
-            , input as input_data
-        from `bigquery-public-data.crypto_ethereum.transactions` trx
-        where date(block_timestamp) = date('{date}')
-            and to_address in ('{OPENSEA_TRADING_CONTRACT_V1}' -- OpenSea: Wyvern Exchange v1
-                , '{OPENSEA_TRADING_CONTRACT_V2}' -- OpenSea: Wyvern Exchange v2
-            )
-            and input like '0xab834bab%' -- atomicMatch_
-            and receipt_status = 1
-    """
-
-    df = utl.download_from_google_bigquery(sql=sql)
-    contract = utl.get_opensea_contract()
-    print("decoding opensea contract")
-    df["decoded"] = df.input_data.apply(lambda x: utl.decode_opensea_trade(x, contract=contract))
-    df["nft_contract"] = df.decoded.apply(lambda x: x["nft_contract"] if x is not None else None)
-    df["token_id"] = df.decoded.apply(lambda x: x["token_id"] if x is not None else None)
-    df["buyer"] = df.decoded.apply(lambda x: x["buyer"] if x is not None else None)
-    df["seller"] = df.decoded.apply(lambda x: x["seller"] if x is not None else None)
-    df["timestamp"] = df.timestamp
-    df["platform"] = "opensea"
-    df = df[["timestamp", "trx_hash", "eth_value", "nft_contract", "token_id", "buyer", "seller", "platform"]]
+    price = dec.get_opensea_trade_price(date)
+    currency = dec.get_opensea_trade_currency(date)
+    df = pd.merge(currency, price, on='trx_hash')
+    df = df[['timestamp', 'trx_hash', 'eth_value', 'payment_token', 'price', 'platform']]
 
     if not running_in_cloud:
         csv_filename_with_path = utl.CSV_WAREHOUSE_PATH + utl.PATHS["nft_trades_staging_opensea"] + date + ".csv"
