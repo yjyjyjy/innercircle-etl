@@ -1,6 +1,7 @@
 import pandas as pd
 import etl_utls as utl
-from const import OPENSEA_TRADING_CONTRACT_V1
+import decode_utls as dec
+from const import OPENSEA_TRADING_CONTRACT_V1, OPENSEA_TRADING_CONTRACT_V2
 import time
 
 
@@ -59,6 +60,28 @@ def update_token_transfers(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_upse
         use_upsert=use_upsert,
         key="trx_hash",
     )
+
+def get_nft_trade_price(date):
+    print("🦄🦄 getting get nft trade price from eth trx log: " + date)
+    sql = f'''
+    SELECT
+        transaction_hash as trx_hash
+        , data
+        , topics
+    FROM `bigquery-public-data.crypto_ethereum.logs`
+    WHERE DATE(block_timestamp) = '{date}'
+        and address in ('{OPENSEA_TRADING_CONTRACT_V1}' -- OpenSea: Wyvern Exchange v1
+            , '{OPENSEA_TRADING_CONTRACT_V2}' -- OpenSea: Wyvern Exchange v2
+            )
+        and topics[ORDINAL(1)] like '0xc4109843%' -- OrdersMatched event
+    ;
+    '''
+    df = utl.download_from_google_bigquery(sql)
+    mod = df.apply(lambda row: dec.decode_opensea_trade_log_to_extract_price(row.data, row.topics)
+        , axis = 'columns', result_type='expand')
+    result = pd.concat([df, mod], axis = 1)[['trx_hash', 0]]
+    result.columns = ['trx_hash', 'price']
+    return result
 
 
 # Decode the trades transactions from opensea each day.
