@@ -8,14 +8,14 @@ import pandas as pd
 import psycopg2 as pg2
 import json
 import requests
-from web3 import Web3
-from const import OPENSEA_TRADING_CONTRACT_V1, PATHS
+from const import PATHS
 
 load_dotenv(".env")
 ABSOLUTE_PATH = os.environ.get("ABSOLUTE_PATH")
 CSV_WAREHOUSE_PATH = os.environ.get("CSV_WAREHOUSE_PATH")
 RUNNING_IN_CLOUD = os.environ.get("RUNNING_IN_CLOUD") == "True"
 OPENSEA_API_KEY = os.environ.get("OPENSEA_API_KEY")
+OPENSEA_V1_ABI_FILENAME = os.environ.get("OPENSEA_V1_ABI_FILENAME")
 
 # **********************************************************
 # ****************** Postgres IO ***************************
@@ -294,72 +294,11 @@ def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp")
     print(gaps)
     return gaps
 
-# **********************************************************
-# ****************** ABI and contract obj ******************
-# **********************************************************
-
-# Get ABI for smart contract NOTE: Use "to" address as smart contract 'interacted with'
-# save_filename: example "abi.json"
-def fetch_abi(address, json_file=None):
-    address = address.lower()
-    ETHERSCAN_API_KEY = os.environ.get("ETHERSCAN_API_KEY")
-    abi_endpoint = (
-        f"https://api.etherscan.io/api?module=contract&action=getabi&address={address}&apikey={ETHERSCAN_API_KEY}"
-    )
-    abi_json = json.loads(requests.get(abi_endpoint).text)
-    if json_file != None:
-        with open(json_file, "w") as outfile:
-            json.dump(abi_json, outfile)
-    return abi_json["result"]
-
-
-def load_abi_json(filename):
-    with open(filename) as json_file:
-        abi_json = json.load(json_file)
-    return abi_json["result"]
-
-
-def create_contract_obj(address, abi):
-    INFURA_ENDPOINT = os.environ.get("INFURA_ENDPOINT")
-    w3 = Web3(Web3.HTTPProvider(INFURA_ENDPOINT))
-    address = Web3.toChecksumAddress(address)
-    contract = w3.eth.contract(address=address, abi=abi)
-    return contract
-
 
 # **********************************************************
 # ****************** OpenSea utils *************************
 # **********************************************************
 
-
-def get_opensea_contract():
-    # get abi and then contract object
-    abi_filename = "abi_opensea.json"
-    search = glob.glob("./" + abi_filename)
-    if len(search) == 0:
-        abi = fetch_abi(OPENSEA_TRADING_CONTRACT_V1, json_file=abi_filename)
-    else:
-        abi = load_abi_json(abi_filename)
-
-    contract = create_contract_obj(OPENSEA_TRADING_CONTRACT_V1, abi)
-    return contract
-
-
-# decode the input data for opensea trades and generate buyer, seller fields
-# factor the create contract part out to improve performance. It only needs to be done once.
-def decode_opensea_trade(data, contract):
-    _, func_params = contract.decode_function_input(data)
-    for key in list(func_params.keys()):
-        if key.startswith("calldata"):
-            token_id = int.from_bytes(func_params[key][69 : 69 + 32], "big")
-    if "addrs" in list(func_params.keys()):
-        packet = {
-            "nft_contract": func_params["addrs"][4].lower(),
-            "token_id": token_id,
-            "buyer": func_params["addrs"][1].lower(),
-            "seller": func_params["addrs"][2].lower(),
-        }
-        return packet
 
 
 # call opensea API to retrieve collection's meta data

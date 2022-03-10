@@ -3,6 +3,8 @@ import etl_utls as utl
 import decode_utls as dec
 from const import OPENSEA_TRADING_CONTRACT_V1, OPENSEA_TRADING_CONTRACT_V2
 import time
+import os
+OPENSEA_ABI_FILE_NAME = os.environ.get("OPENSEA_ABI_FILE_NAME")
 
 
 def update_eth_transactions(date):
@@ -79,9 +81,9 @@ def get_nft_trade_price(date):
     df = utl.download_from_google_bigquery(sql)
     mod = df.apply(lambda row: dec.decode_opensea_trade_log_to_extract_price(row.data, row.topics)
         , axis = 'columns', result_type='expand')
-    result = pd.concat([df, mod], axis = 1)[['trx_hash', 0]]
-    result.columns = ['trx_hash', 'price']
-    return result
+    price = pd.concat([df, mod], axis = 1)[['trx_hash', 0]]
+    price.columns = ['trx_hash', 'price']
+    return price
 
 
 # Decode the trades transactions from opensea each day.
@@ -97,7 +99,10 @@ def update_nft_trade_opensea(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_up
             , input as input_data
         from `bigquery-public-data.crypto_ethereum.transactions` trx
         where date(block_timestamp) = date('{date}')
-            and to_address='{OPENSEA_TRADING_CONTRACT_V1}'
+            and to_address in ('{OPENSEA_TRADING_CONTRACT_V1}' -- OpenSea: Wyvern Exchange v1
+                , '{OPENSEA_TRADING_CONTRACT_V2}' -- OpenSea: Wyvern Exchange v2
+            )
+            and input like '0xab834bab%' -- atomicMatch_
             and receipt_status = 1
     """
 
