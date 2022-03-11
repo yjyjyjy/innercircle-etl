@@ -16,7 +16,7 @@ up.update_contracts()
 # TODO don't hardcode this
 date_gaps = utl.check_table_for_date_gaps(table="nft_trades", start_date="2022-01-01")
 for date in date_gaps:
-    up.update_nft_trade_opensea(date)
+    up.update_nft_trade_opensea(date, use_upsert=False)
 
 # token transfers
 # TODO don't hardcode this

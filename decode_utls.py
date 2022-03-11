@@ -1,16 +1,19 @@
+from const import OPENSEA_TRADING_CONTRACT_V1, OPENSEA_TRADING_CONTRACT_V2
 import etl_utls as utl
-from web3._utils.events import get_event_data
+from eth_utils import to_hex
+from functools import lru_cache
 from hexbytes import HexBytes
 import json
-from web3 import Web3
 import os
-import glob
-import requests
 import pandas as pd
-infura_endpoint = os.environ.get("INFURA_ENDPOINT")
-w3 = Web3(Web3.HTTPProvider(infura_endpoint))
+import requests
+import sys
+from web3 import Web3
+from web3.auto import w3
+from web3._utils.events import get_event_data
+
 OPENSEA_V1_ABI_FILENAME = os.environ.get("OPENSEA_V1_ABI_FILENAME")
-from const import OPENSEA_TRADING_CONTRACT_V1, OPENSEA_TRADING_CONTRACT_V2
+OPENSEA_V2_ABI_FILENAME = os.environ.get("OPENSEA_V2_ABI_FILENAME")
 
 # **********************************************************
 # ****************** ABI and contract obj ******************
@@ -39,26 +42,28 @@ def load_abi_json(filename):
 
 def create_contract_obj(address, abi):
     INFURA_ENDPOINT = os.environ.get("INFURA_ENDPOINT")
-    w3 = Web3(Web3.HTTPProvider(INFURA_ENDPOINT))
+    w3_endpoint = Web3(Web3.HTTPProvider(INFURA_ENDPOINT))
     address = Web3.toChecksumAddress(address)
-    contract = w3.eth.contract(address=address, abi=abi)
+    contract = w3_endpoint.eth.contract(address=address, abi=abi)
     return contract
 
 # **********************************************************
 # ****************** Decoding OpenSea **********************
 # **********************************************************
 
+################### trading price ##########################
 
-def get_opensea_contract():
-    # get abi and then contract object
-    search = glob.glob("./" + OPENSEA_V1_ABI_FILENAME)
-    if len(search) == 0:
-        abi = fetch_abi(OPENSEA_V1_ABI_FILENAME, json_file=OPENSEA_V1_ABI_FILENAME)
-    else:
-        abi = load_abi_json(OPENSEA_V1_ABI_FILENAME)
+# def get_opensea_contract():
+#     # get abi and then contract object
+#     print('📜 getting openssea contract')
+#     search = glob.glob("./" + OPENSEA_V1_ABI_FILENAME)
+#     if len(search) == 0:
+#         abi = fetch_abi(OPENSEA_V1_ABI_FILENAME, json_file=OPENSEA_V1_ABI_FILENAME)
+#     else:
+#         abi = load_abi_json(OPENSEA_V1_ABI_FILENAME)
 
-    contract = create_contract_obj(OPENSEA_TRADING_CONTRACT_V1, abi)
-    return contract
+#     contract = create_contract_obj(OPENSEA_TRADING_CONTRACT_V1, abi)
+#     return contract
 
 
 def decode_opensea_trade_log_to_extract_price(data, topics):
@@ -91,27 +96,6 @@ def decode_opensea_trade_log_to_extract_price(data, topics):
 
     return decoded_event['args']['price']/10**18
 
-# decode the input data for opensea trades and generate buyer, seller fields
-# factor the create contract part out to improve performance. It only needs to be done once.
-def decode_opensea_trade_to_extract_currency(data, contract = None):
-    if contract == None:
-        contract = get_opensea_contract()
-
-    _, func_params = contract.decode_function_input(data)
-    # for key in list(func_params.keys()):
-    #     if key.startswith("calldata"):
-    #         token_id = int.from_bytes(func_params[key][69 : 69 + 32], "big")
-    if "addrs" in list(func_params.keys()):
-        # packet = {
-        #     # "nft_contract": func_params["addrs"][4].lower(),
-        #     # "token_id": token_id,
-        #     # "buyer": func_params["addrs"][1].lower(),
-        #     # "seller": func_params["addrs"][2].lower(),
-
-        # }
-        payment_token = func_params["addrs"][6].lower()
-        return payment_token
-
 def get_opensea_trade_price(date):
     print("🦄🦄 getting get nft trade price from eth trx log: " + date)
     sql = f'''
@@ -135,8 +119,88 @@ def get_opensea_trade_price(date):
     price = price.groupby('trx_hash')['price'].sum().reset_index()
     return price
 
+
+################### trading price #########################
+# decode the input data for opensea trades and generate buyer, seller fields
+# factor the create contract part out to improve performance. It only needs to be done once.
+def decode_tuple(t, target_field):
+    output = dict()
+    for i in range(len(t)):
+        if isinstance(t[i], (bytes, bytearray)):
+            output[target_field[i]['name']] = to_hex(t[i])
+        elif isinstance(t[i], (tuple)):
+            output[target_field[i]['name']] = decode_tuple(t[i], target_field[i]['components'])
+        else:
+            output[target_field[i]['name']] = t[i]
+    return output
+
+def decode_list_tuple(l, target_field):
+    output = l
+    for i in range(len(l)):
+        output[i] = decode_tuple(l[i], target_field)
+    return output
+
+def decode_list(l):
+    output = l
+    for i in range(len(l)):
+        if isinstance(l[i], (bytes, bytearray)):
+            output[i] = to_hex(l[i])
+        else:
+            output[i] = l[i]
+    return output
+
+def convert_to_hex(arg, target_schema):
+    """
+    utility function to convert byte codes into human readable and json serializable data structures
+    """
+    output = dict()
+    for k in arg:
+        if isinstance(arg[k], (bytes, bytearray)):
+            output[k] = to_hex(arg[k])
+        elif isinstance(arg[k], (list)) and len(arg[k]) > 0:
+            target = [a for a in target_schema if 'name' in a and a['name'] == k][0]
+            if target['type'] == 'tuple[]':
+                target_field = target['components']
+                output[k] = decode_list_tuple(arg[k], target_field)
+            else:
+                output[k] = decode_list(arg[k])
+        elif isinstance(arg[k], (tuple)):
+            target_field = [a['components'] for a in target_schema if 'name' in a and a['name'] == k][0]
+            output[k] = decode_tuple(arg[k], target_field)
+        else:
+            output[k] = arg[k]
+    return output
+
+@lru_cache(maxsize=None)
+def _get_contract(address, abi):
+    """
+    This helps speed up execution of decoding across a large dataset by caching the contract object
+    It assumes that we are decoding a small set, on the order of thousands, of target smart contracts
+    """
+    if isinstance(abi, (str)):
+        abi = json.loads(abi)
+
+    contract = w3.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
+    return (contract, abi)
+
+def decode_opensea_trade_to_extract_currency(input_data, abi, contract):
+    if abi is not None:
+        try:
+            if isinstance(abi, (str)):
+                abi = json.loads(abi)
+            func_obj, func_params = contract.decode_function_input(input_data)
+            target_schema = [a['inputs'] for a in abi if 'name' in a and a['name'] == func_obj.fn_name][0]
+            decoded_func_params = convert_to_hex(func_params, target_schema)
+            payment_token = decoded_func_params['addrs'][6].lower()
+            return payment_token
+        except:
+            e = sys.exc_info()[0]
+            return f'<error> decoding error: {repr(e)}'
+    else:
+        return '<error> no matching abi'
+
 def get_opensea_trade_currency(date):
-    print("🦄🦄 getting get nft trade currency fro: " + date)
+    print("🦄🦄 getting get nft trade currency from call input data: " + date)
     sql = f'''
         select
             block_timestamp as `timestamp`
@@ -156,8 +220,14 @@ def get_opensea_trade_currency(date):
     ;
     '''
     df = utl.download_from_google_bigquery(sql)
-    contract = get_opensea_contract()
-    mod = df.apply(lambda row: decode_opensea_trade_to_extract_currency(row.input_data, contract), axis = 'columns', result_type='expand')
+    opensea_abi_v2 = load_abi_json(OPENSEA_V2_ABI_FILENAME)
+    (opensea_contract_v2, _) = _get_contract(address=OPENSEA_TRADING_CONTRACT_V2, abi=opensea_abi_v2)
+    mod = df.apply(
+        lambda row: decode_opensea_trade_to_extract_currency(
+            input_data=row.input_data
+            , abi=opensea_abi_v2
+            , contract=opensea_contract_v2
+            ), axis = 'columns', result_type='expand')
     currency = pd.concat([df, mod], axis = 1)[['timestamp','trx_hash','eth_value', 0, 'platform']]
     currency.columns = ['timestamp','trx_hash','eth_value', 'payment_token', 'platform']
     return currency
