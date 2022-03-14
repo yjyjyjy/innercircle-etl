@@ -1,12 +1,12 @@
 -- contract data from google bigquery
 create table eth_contracts (
-	address varchar(100)  primary key
+	address	varchar primary key
 	, is_erc20 BOOLEAN
 	, is_erc721 BOOLEAN
 	, is_nft BOOLEAN
 	, timestamp TIMESTAMP
-	, sort key (timestamp)
 );
+
 
 -- all ethererum transaction data
 create table eth_transactions (
@@ -15,7 +15,6 @@ create table eth_transactions (
     , from_address varchar(100)
     , to_address varchar(100)
     , eth_value numeric
-	, sort key (timestamp)
 );
 
 
@@ -47,8 +46,8 @@ select * from eth_token_transfers where timestamp >= '2022-01-01' and timestamp 
 -- decoded trading information that happened on OpenSea etc.
 create table nft_trades (
 	timestamp timestamp
-	, trx_hash varchar(100)
-	, eth_value float
+	, trx_hash varchar
+	, eth_value numeric
 	, payment_token varchar
 	, price numeric
 	, platform varchar(50)
@@ -59,15 +58,9 @@ create index nft_trades_idx_trx_hash on nft_trades (trx_hash);
 
 -- this table is to trigger backfill for newly identified NFT contracts
 create table new_nft_contracts (
-	address varchar(100) primary key
+	address varchar primary key
 	, missing_metadata BOOLEAN
 	, missing_trx_union BOOLEAN
-);
-
-create table new_nft_contracts_staging (
-	address varchar(100) primary key
-	, missing_metadata varchar(20)
-	, missing_trx_union varchar(20)
 );
 
 
@@ -216,14 +209,14 @@ create index insider_to_circle_mapping_idx_is_current on insider_to_circle_mappi
 
 create table circle (
 	id SERIAL PRIMARY KEY
-	, name varchar(500)
+	, name varchar
 );
 
 create table insider (
-	id varchar(100) PRIMARY KEY
-	, ens varchar(500)
-	, twitter_username varchar(500)
-	, instagram_username varchar(500)
+	id string PRIMARY KEY
+	, ens string
+	, twitter_username string
+	, instagram_username string
 );
 
 -- the trade to track how smart a trader is. It's shadow trade because we track the floor price when they enter and exit instead of the real profit/loss. NFT is hard to value with traits considered.
@@ -277,38 +270,37 @@ create unique index "insight_trx_unique_idx_insider_id_collection_id_nth_trx" ON
 create unique index "insight_trx_unique_idx_trx_hash_token_id" ON insight_trx(trx_hash, token_id);
 
 create table insight (
-	insider_id varchar(100) not null -- eth address
-	, collection_id varchar(100) not null
+	insider_id varchar not null -- eth address
+	, collection_id varchar not null
 	, started_at timestamp not null
 	, total_eth_spent numeric not null
-	-- , foreign key (insider_id)  references insider(id)
-	-- , foreign key (collection_id)  references collection(id)
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
 );
 create unique index "insight_unique_idx_insider_id_collection_id" on insight(insider_id, collection_id);
 
 -- the logic of how contracts are considered endorsedd by each circle
 create table collection_to_circle_mapping (
-	collection_id varchar(100) not null
+	collection_id varchar not null
 	, circle_id int not null
 	, created_at date not null
-	-- , foreign key (collection_id)  references collection(id)
-	-- , foreign key (circle_id)  references circle(id)
+	, foreign key (collection_id)  references collection(id)
+	, foreign key (circle_id)  references circle(id)
 );
--- create unique index "collection_to_circle_mapping_unique_idx_collection_circle" ON collection_to_circle_mapping(collection_id, circle_id);
+create unique index "collection_to_circle_mapping_unique_idx_collection_circle" ON collection_to_circle_mapping(collection_id, circle_id);
 
 create table post (
 	id serial primary key
-	, collection_id varchar(100) not null
+	, collection_id varchar not null
 	, created_at date not null
-	-- , foreign key (collection_id) references collection(id)
+	, foreign key (collection_id) references collection(id)
 );
 
 create table subscriber (
 	id serial primary key
-	, email varchar(500)
+	, email varchar
 );
--- create unique index "subscriber_unique_idx_email" ON subscriber(email);
--- can't create another unique index
+create unique index "subscriber_unique_idx_email" ON subscriber(email);
 
 create index eth_contracts_idx_timestamp on eth_contracts (timestamp desc);
 create index eth_contracts_idx_is_nft on eth_contracts (is_nft);
