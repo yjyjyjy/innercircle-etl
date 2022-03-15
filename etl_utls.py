@@ -327,8 +327,9 @@ def get_contract_meta_data_from_opensea(contract):
     status_code = response.status_code
     if status_code != 200:  # logging only
         print(f"🚨 contract {contract} returns non-200 status code: {status_code}")
-    if status_code in (429, 404):  # too many requests let the calling function handle this
-        print("🚨 encounter HTTP error 429 too many requests or 404 page doesn't exist")
+        if status_code in (429, 404):  # too many requests let the calling function handle this
+            print("🚨 encounter HTTP error 429 too many requests or 404 page doesn't exist")
+            return meta, status_code
         return meta, status_code
     try:
         data = json.loads(response.text)

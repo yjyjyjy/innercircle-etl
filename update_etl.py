@@ -36,7 +36,7 @@ def update_token_transfers(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_upse
     print("🦄🦄 start update_token_transfers: " + date)
 
     sql = f"""
-    SELECT
+    SELECT  -- trx_hash is not the unique key for token transfers table!!!
         block_timestamp as `timestamp`
         , transaction_hash as trx_hash
         , token_address as contract
@@ -130,8 +130,11 @@ def update_contract_is_nft():
         set is_nft = true
         FROM (
                 select
-                    nft_contract as address
-                from nft_trades
+                    tran.contract as address
+                from nft_trades trade
+                join eth_token_transfers_2022 tran
+                    on trade.trx_hash = tran.trx_hash
+                where trade.timestamp >= '2022-01-01'
                 group by 1
             ) AS tr
         WHERE con.address = tr.address
@@ -207,20 +210,19 @@ def update_collection(pagination=5):
                     print("status_code = " + status_code)
                 continue
 
-            if status_code in [429, 404]:
+            if status_code in [429, 404, 495]:
                 print(f"⏱ current wait_time: {wait_time}")
                 time.sleep(60)
                 if wait_time <= 5:
                     wait_time += 0.5
 
-            row = pd.DataFrame(meta, index=[0])
-
-            if output.empty:
-                output = row
-            else:
-                output = output.append(row)
+            if status_code == 200:
+                row = pd.DataFrame(meta, index=[0])
+                if output.empty:
+                    output = row
+                else:
+                    output = output.append(row)
             time.sleep(wait_time)
-
         print("🧪🧪🧪 upserting output data")
         print(output[["address", "name"]])
 
@@ -282,18 +284,31 @@ def update_nft_trx_union(year=None, use_upsert=True):
         start_date = year + "-01-01"
     sql = f"""
         with cet_nft_token_transfers as (
+
             select
                 trans.*
+                , case when trade.payment_token = '0x0000000000000000000000000000000000000000' then 'ETH'
+                    when trade.payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' then 'WETH'
+                    when trade.payment_token = '0x64d91f12ece7362f91a6f8e7940cd55f05060b92' then 'ASH'
+                    when trade.payment_token = '0x15d4c048f83bd7e37d49ea4c83a07267ec4203da' then 'GALA'
+                    when trade.payment_token = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' then 'USDC'
+                    when trade.payment_token = '0x5881da4527bcdc44a100f8ba2efc4039243d2c07' then 'LGBTQ'
+                    when trade.payment_token = '0x3845badade8e6dff049820680d1f14bd3903a5d0' then 'SAND'
+                    when trade.payment_token = '0x0f5d2fb29fb7d3cfee444a200298f468908cc942' then 'MANA'
+                else trade.payment_token end as trade_payment_token
+                , trade.price as trade_price
+                , trade.platform as trade_platform
                 , trx.eth_value
                 , trx.from_address=trans.to_address as caller_is_receiver
-                , trx.to_address in ('0x7be8076f4ea4a4ad08075c2508e481d6c946d12b' --as to_address_is_opensea
-                                    , '0x7f268357a8c2552623316e2562d90e642bb538e5' -- OpenSea: Wyvern Exchange v2\
-                                    )
             from eth_token_transfers_{year} trans
             join eth_contracts con
                 on con.address = trans.contract
             join eth_transactions trx
                 on trx.trx_hash = trans.trx_hash
+                and trx.timestamp >= '2022-01-01'
+            left join nft_trades trade
+                on trade.trx_hash = trans.trx_hash
+                and trade.timestamp >= '2022-01-01'
             left join new_nft_contracts new
                 on trans.contract = new.address
                 and new.missing_trx_union
@@ -317,8 +332,10 @@ def update_nft_trx_union(year=None, use_upsert=True):
             , trans.token_id_or_value as token_id
             , trans.from_address
             , trans.to_address
+            , trade_platform
+            , trade_payment_token
             , mul.num_tokens_in_the_same_transaction
-            , eth_value/mul.num_tokens_in_the_same_transaction as eth_value_per_token -- there shouldn't be div by zero
+            , coalesce(trade_price, eth_value)/mul.num_tokens_in_the_same_transaction as price_per_token -- there shouldn't be div by zero
             , case when to_address in (
                     '0x0000000000000000000000000000000000000000'
                     ,'0x000000000000000000000000000000000000dead'
@@ -330,12 +347,12 @@ def update_nft_trx_union(year=None, use_upsert=True):
                         )
                     and caller_is_receiver
                         then 'mint'
-                when to_address_is_opensea then 'trade'
+                when trade_platform is not null then 'trade'
                 else 'transfer'
                 end as action
             , caller_is_receiver
         from cet_nft_token_transfers trans
-        left join num_tokens mul
+        join num_tokens mul
             on trans.trx_hash = mul.trx_hash
         ;
     """
@@ -348,10 +365,12 @@ def update_nft_trx_union(year=None, use_upsert=True):
             "token_id",
             "from_address",
             "to_address",
+            "trade_platform",
+            "trade_payment_token",
             "num_tokens_in_the_same_transaction",
             "eth_value_per_token",
             "action",
-            "caller_is_receiver",
+            "caller_is_receiver"
         ],
     )
     utl.copy_from_df_to_postgres(df=df, table="nft_trx_union", use_upsert=use_upsert, key="trx_hash")
@@ -381,7 +400,7 @@ def update_nft_ownership():
     ;
     create index nft_ownership_idx_owner on nft_ownership (owner);
     create index nft_ownership_idx_contract on nft_ownership (contract);
-    create index nft_ownership_idx_token_id on nft_ownership (token_id);
+    create index nft_ownership_idx_contract_token_id on nft_ownership (contract, token_id);
     ;"""
     utl.query_postgres(sql)
 
@@ -393,11 +412,12 @@ def update_nft_contract_floor_price(date):
         select
             cast('{date}' as date)
             , contract
-            , percentile_disc(0.1) within group (order by eth_value_per_token)
+            , percentile_disc(0.1) within group (order by price_per_token)
         from nft_trx_union
         where timestamp >= date('{date}')
             and timestamp < date('{date}') + interval'1 days'
             and action = 'trade'
+            and t.trade_payment_token in ('ETH', 'WETH')
         group by 1,2
         ;
         --  having count(distinct trx_hash) >= 2  -- having more than 2 trades
@@ -561,14 +581,15 @@ with cet as (
         , t.token_id
         , t.action
         , t.trx_hash
-        , eth_value_per_token
+        , price_per_token
     from insider_to_circle_mapping c
     join nft_trx_union t
         on c.insider_id = t.to_address
     where action in ('mint', 'trade')
         and c.is_current -- current insiders only
         and t.timestamp > (select max(timestamp) from insight_trx)
-        and t.eth_value_per_token > 0 -- making sure they actually spent their eth
+        and t.price_per_token > 0 -- making sure they actually spent their eth
+        and (t.trade_payment_token is null or t.trade_payment_token in ('ETH', 'WETH'))
     union all
     select
         insider_id
@@ -577,7 +598,7 @@ with cet as (
         , token_id
         , action
         , trx_hash
-        , eth_value_per_token
+        , price_per_token
     from insight_trx
 )
 select
@@ -587,7 +608,7 @@ select
     , s.token_id
     , s.action
     , s.trx_hash
-    , s.eth_value_per_token
+    , s.price_per_token
     , row_number() over (
         partition by s.insider_id, s.collection_id order by s.timestamp
     ) as nth_trx -- the nth acquisition of the same insider and collection
@@ -606,7 +627,7 @@ select
 	insider_id
 	, collection_id
 	, min(timestamp) as started_at
-	, sum(eth_value_per_token) as total_eth_spent
+	, sum(price_per_token) as total_eth_spent
 from insight_trx
 group by 1,2
 ;

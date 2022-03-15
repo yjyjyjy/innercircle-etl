@@ -94,16 +94,18 @@ re: num_tokens_in_the_same_transaction, and eth_value_per_token
 Say I bought 3 NFTs in one transactions for 3 eth: 2 eth for token A; 0.5 eth for token B and C each). There will be three rows in this table with the same trx_hash. The num_tokens_in_the_same_transaction == 3 and eth_value_per_token == 1 for all three rows.
 */
 create table nft_trx_union (
-	timestamp timestamp,
-	trx_hash varchar,
-	contract varchar,
-	token_id varchar,
-	from_address varchar,
-	to_address varchar,
-	num_tokens_in_the_same_transaction int,
-	eth_value_per_token numeric,
-	action varchar,
-	caller_is_receiver BOOLEAN
+	timestamp timestamp
+	, trx_hash varchar
+	, contract varchar
+	, token_id varchar
+	, from_address varchar
+	, to_address varchar
+	, trade_platform varchar
+	, trade_payment_token varchar
+	, num_tokens_in_the_same_transaction int
+	, price_per_token numeric
+	, action varchar
+	, caller_is_receiver BOOLEAN
 )
 ;
 create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
