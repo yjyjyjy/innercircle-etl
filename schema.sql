@@ -104,7 +104,7 @@ create table nft_trx_union (
 	, trade_payment_token varchar
 	, num_tokens_in_the_same_transaction int
 	, price_per_token numeric
-	, action varchar
+	, action varchar --
 	, caller_is_receiver BOOLEAN -- meaning the wallet received the token initiated the call
 )
 ;
@@ -221,38 +221,28 @@ create table insider (
 	, instagram_username varchar
 );
 
--- the trade to track how smart a trader is. It's shadow trade because we track the floor price when they enter and exit instead of the real profit/loss. NFT is hard to value with traits considered.
-drop table if exists shadow_trade;
-create table shadow_trade (
-	shadow_trade_id serial primary key
-	, insider_id varchar not null
-	, collection_id varchar not null
-	, collection_name varchar
-	, token_id varchar not null
-	, entry_price numeric not null
-	, entry_floor_price numeric
-	, entry_timestamp timestamp not null
-	, exit_price numeric
-	, exit_timestamp timestamp
-	, latest_price numeric not null
-	, profit_or_loss numeric not null -- profit or loss
-	, foreign key (insider_id) references insider(id)
-	, foreign key (collection_id) references collection(id)
+create table address_metadata (
+	id varchar primary key
+	, public_name_tag varchar
+	, is_contract BOOLEAN
+	, is_special_address boolean
+	, special_account_type varchar
+	, opensea_user_created_at timestamp
+	, opensea_display_name varchar
+	, opensea_banner_image_url varchar
+	, opensea_image_url varchar
+	, opensea_bio varchar
+	, ens varchar
+	, twitter_username varchar
+	, instagram_username varchar
+	, medium_username varchar
+	, email varchar
+	, website varchar
 )
 ;
-create unique index "shadow_trade_unique_idx_insider_id_col_id_token_id_entry_ts" ON shadow_trade(insider_id, collection_id, token_id, entry_timestamp);
-
-drop table if exists shadow_trade_summary;
-create table shadow_trade_summary (
-	insider_id varchar
-	, collection_id varchar
-	, entry_timestamp timestamp
-	, profit_or_loss numeric
-	, primary key (insider_id, collection_id)
-	, foreign key (insider_id)  references insider(id)
-	, foreign key (collection_id)  references collection(id)
-)
-;
+create index address_metadata_idx_email on address_metadata (email);
+create index address_metadata_idx_is_contract on address_metadata (is_contract);
+create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
 
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (

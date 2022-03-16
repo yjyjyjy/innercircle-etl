@@ -42,6 +42,7 @@ for date in date_gaps:
     up.update_nft_contract_floor_price(date)
 
 up.update_owner_collection_total_worth()
+up.update_past_90_days_trading_roi()
 
 ######## Insider, circles, insights ##########
 up.update_circle_insider()

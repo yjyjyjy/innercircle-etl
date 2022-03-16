@@ -305,7 +305,7 @@ def update_nft_trx_union(year=None, use_upsert=True):
                 on con.address = trans.contract
             join eth_transactions trx
                 on trx.trx_hash = trans.trx_hash
-                and trx.timestamp >= '2022-01-01'
+                and trx.timestamp >= '{start_date}'
             left join nft_trades trade
                 on trade.trx_hash = trans.trx_hash
                 and trade.timestamp >= '2022-01-01'
@@ -417,7 +417,7 @@ def update_nft_contract_floor_price(date):
         where timestamp >= date('{date}')
             and timestamp < date('{date}') + interval'1 days'
             and action = 'trade'
-            and t.trade_payment_token in ('ETH', 'WETH')
+            and trade_payment_token in ('ETH', 'WETH')
         group by 1,2
         ;
         --  having count(distinct trx_hash) >= 2  -- having more than 2 trades
@@ -499,20 +499,116 @@ def update_owner_collection_total_worth():
 
 # most profitable traders in the past 90 days
 
+def update_past_90_days_trading_roi():
+    sql = '''
+    drop table if exists trx_with_floor_price;
+    create table trx_with_floor_price as
+    select
+        to_address
+        , from_address
+        , date(t.timestamp) as date
+        , t.contract
+        , token_id
+        , price_per_token
+        , p.floor_price_in_eth
+    from nft_trx_union t
+    left join nft_contract_floor_price p
+        on date(t.timestamp) = p.date
+        and t.contract = p.contract
+    where t.timestamp >= now() - interval'90 days'
+    ;
 
+    drop table if exists cet_buy;
+    create table cet_buy as
+    select
+        to_address as address
+        , date
+        , contract
+        , token_id
+        , coalesce(floor_price_in_eth, price_per_token) as acquisition_floor_price
+    from trx_with_floor_price
+    where price_per_token > 0 -- not airdrop etc.
+    group by 1,2,3,4,5
+    ;
+    create index buy_idx_address_contract_token_id on cet_buy (address, contract, token_id);
+
+    drop table if exists cet_sell;
+    create table cet_sell as
+    select
+        from_address as address
+        , date
+        , contract
+        , token_id
+        , floor_price_in_eth
+    from trx_with_floor_price
+    where floor_price_in_eth > 0  -- meaningful project
+        and price_per_token > 0 -- making sure the sale is not some tricky transaction (wash sale etc)
+    group by 1,2,3,4,5
+    ;
+    create index sell_idx_address_contract_token_id on cet_sell (address, contract, token_id);
+
+    drop table if exists trade_roi_flat;
+    create table trade_roi_flat as
+    select
+        buy.address
+        , buy.date as buy_date
+        , buy.contract
+        , buy.token_id
+        , buy.acquisition_floor_price
+        , sell.floor_price_in_eth as sell_floor_price
+        , fp.floor_price_in_eth as current_floor_price
+        , row_number() over (partition by buy.address, buy.contract, buy.token_id order by sell.date) as rnk
+    from cet_buy buy
+    left join cet_sell sell
+        on buy.address = sell.address
+        and buy.contract = sell.contract
+        and buy.token_id = sell.token_id
+        and sell.date >= buy.date
+    left join (
+        select
+            contract
+            , floor_price_in_eth
+        from (
+            select
+                contract
+                , floor_price_in_eth
+                , row_number() over (partition by contract order by date desc) as rnk
+            from nft_contract_floor_price
+            where date >= now() - interval'3 days'
+        ) cet
+        where rnk = 1
+    ) fp -- current floor price
+        on fp.contract = buy.contract
+    ;
+    drop table if exists past_90_days_trading_roi;
+    create table past_90_days_trading_roi as
+    select
+        address
+        , sum(coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price) as gain
+    from trade_roi_flat
+    group by 1
+    ;
+    create index trade_roi_flat_idx_address on trade_roi_flat (wallet);
+
+    drop table if exists past_90_days_trading_roi;
+    create table past_90_days_trading_roi as
+    select
+        address
+        , sum(coalesce(sell_floor_price, current_floor_price) - buy_floor_price) as gain
+    from trade_roi_flat
+    group by 1
+    ;
+
+    -- drop table if exists trx_with_floor_price;
+    -- drop table if exists cet_buy;
+    -- drop table if exists cet_sell;
+    -- drop table if exists trade_roi_flat;
+
+    '''
+    utl.query_postgres(sql)
 
 
 ######################### Insider, circles, insights, Posts #########################
-
-# insert into insider (id)
-# select owner as id
-# from owner_collection_total_worth source
-# left join insider target
-#     on source.owner = target.id
-# where source.owner_rank <= 200
-#     and target.id is null
-# group by 1;
-
 
 def update_circle_insider():  # insider_to_circle_mapping
     sql = """
