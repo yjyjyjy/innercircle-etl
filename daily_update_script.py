@@ -43,7 +43,7 @@ for date in date_gaps:
 
 up.update_owner_collection_total_worth()
 
-######################### Insider, circles, insights #########################
+######## Insider, circles, insights ##########
 up.update_circle_insider()
 up.update_insight()
 up.update_circle_collection()

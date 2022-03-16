@@ -424,8 +424,8 @@ def update_nft_contract_floor_price(date):
     """
     utl.query_postgres(sql)
 
-
-def update_owner_collection_total_worth():  # each owner's worth by each contract they own. Plus their total worth
+# each owner's worth by each contract they own. Plus their total worth
+def update_owner_collection_total_worth():
     max_pricing_available_date = utl.get_terminal_ts(
         table="nft_contract_floor_price", end="max", offset=None, key="date"
     )
@@ -496,6 +496,10 @@ def update_owner_collection_total_worth():  # each owner's worth by each contrac
         ;
     """
     utl.query_postgres(sql)
+
+# most profitable traders in the past 90 days
+
+
 
 
 ######################### Insider, circles, insights, Posts #########################

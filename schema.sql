@@ -105,7 +105,7 @@ create table nft_trx_union (
 	, num_tokens_in_the_same_transaction int
 	, price_per_token numeric
 	, action varchar
-	, caller_is_receiver BOOLEAN
+	, caller_is_receiver BOOLEAN -- meaning the wallet received the token initiated the call
 )
 ;
 create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
