@@ -87,14 +87,8 @@ def update_nft_trade_opensea(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_up
     )
 
 
-def update_contracts(use_upsert=True):
+def update_contracts(date):
     print("🦄🦄 start update_contracts")
-
-    # get max(timestamp of existing table)
-    max_ts = utl.get_terminal_ts(table="eth_contracts", end="max")
-    if max_ts == None:
-        max_ts = "2015-01-01"
-
     sql = f"""
     with cet as (
         select
@@ -105,7 +99,7 @@ def update_contracts(use_upsert=True):
             , block_timestamp as `timestamp`
             , row_number() over (partition by address order by block_timestamp desc)  as rnk
         from `bigquery-public-data.crypto_ethereum.contracts`
-        where block_timestamp >= '{max_ts}'
+        where date(block_timestamp) = '{date}'
     )
     select
         address
@@ -118,9 +112,8 @@ def update_contracts(use_upsert=True):
     """
     utl.copy_from_google_bigquery_to_postgres(
         sql=sql,
-        table="eth_contracts",
-        use_upsert=use_upsert,
-        key="address",
+        table="eth_contracts"
+        # not using upsert because of primary key constraint
     )
 
 
@@ -148,23 +141,14 @@ def mark_new_contracts():
     delete from collection where name is null;
     truncate table new_nft_contracts;
     insert into new_nft_contracts
-    with nft_trx_contract as (
-        select contract
-        from nft_trx_union
-        where timestamp >= '2021-01-01'
-        group by 1
-    )
     select
         sot.address
         , meta.id is null as missing_metadata
-        , nft.contract is null as missing_trx_union
     from eth_contracts sot
     left join collection meta
         on sot.address = meta.id
-    left join nft_trx_contract nft
-        on sot.address = nft.contract
     where sot.is_nft
-        and (meta.id is null or nft.contract is null)
+        and meta.id is null
         and sot.timestamp >= '2021-01-01'
     ;
     """
@@ -271,60 +255,61 @@ def backup_meta_data():
     utl.export_postgres(table="collection", csv_filename_with_path=utl.CSV_WAREHOUSE_PATH + "collection.csv")
     utl.export_postgres(table="eth_contracts", csv_filename_with_path=utl.CSV_WAREHOUSE_PATH + "eth_contracts.csv")
 
+def update_nft_trx_union(date):
+    utl.delete_current_day_data(date=date, table='nft_trx_union', key='timestamp')
+    year = str(date)[:4]
 
-def update_nft_trx_union(year=None, use_upsert=True):
-    print("🦄🦄 start update_nft_trx_union ")
-    start_date = "2017-01-01"
-    if year == None:
-        max_ts = utl.get_terminal_ts(table="nft_trx_union", end="max", offset="-7 days")
-        if max_ts > start_date:
-            start_date = max_ts
-        year = start_date[:4]
-    else:
-        start_date = year + "-01-01"
-    sql = f"""
-        with cet_nft_token_transfers as (
+    utl.query_postgres(sql = f'''
+        drop table if exists cet_nft_token_transfers;
+        create table cet_nft_token_transfers as
+        select
+            trans.*
+            , case when trade.payment_token = '0x0000000000000000000000000000000000000000' then 'ETH'
+                when trade.payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' then 'WETH'
+                when trade.payment_token = '0x64d91f12ece7362f91a6f8e7940cd55f05060b92' then 'ASH'
+                when trade.payment_token = '0x15d4c048f83bd7e37d49ea4c83a07267ec4203da' then 'GALA'
+                when trade.payment_token = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' then 'USDC'
+                when trade.payment_token = '0x5881da4527bcdc44a100f8ba2efc4039243d2c07' then 'LGBTQ'
+                when trade.payment_token = '0x3845badade8e6dff049820680d1f14bd3903a5d0' then 'SAND'
+                when trade.payment_token = '0x0f5d2fb29fb7d3cfee444a200298f468908cc942' then 'MANA'
+            else trade.payment_token end as trade_payment_token
+            , trade.price as trade_price
+            , trade.platform as trade_platform
+            , trx.eth_value
+            , trx.from_address=trans.to_address as caller_is_receiver
+        from eth_token_transfers_{year} trans
+        join eth_contracts con
+            on con.address = trans.contract
+        join eth_transactions trx
+            on trx.trx_hash = trans.trx_hash
+            and trx.timestamp >= '{date}'
+            and trx.timestamp < date('{date}') + interval '1 day'
+        left join nft_trades trade
+            on trade.trx_hash = trans.trx_hash
+            and trade.timestamp >= '{date}'
+            and trade.timestamp < date('{date}') + interval '1 day'
+        where trans.timestamp >= '{date}'
+            and trans.timestamp < date('{date}') + interval '1 day'
+            and con.is_nft
+        ;
 
-            select
-                trans.*
-                , case when trade.payment_token = '0x0000000000000000000000000000000000000000' then 'ETH'
-                    when trade.payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' then 'WETH'
-                    when trade.payment_token = '0x64d91f12ece7362f91a6f8e7940cd55f05060b92' then 'ASH'
-                    when trade.payment_token = '0x15d4c048f83bd7e37d49ea4c83a07267ec4203da' then 'GALA'
-                    when trade.payment_token = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' then 'USDC'
-                    when trade.payment_token = '0x5881da4527bcdc44a100f8ba2efc4039243d2c07' then 'LGBTQ'
-                    when trade.payment_token = '0x3845badade8e6dff049820680d1f14bd3903a5d0' then 'SAND'
-                    when trade.payment_token = '0x0f5d2fb29fb7d3cfee444a200298f468908cc942' then 'MANA'
-                else trade.payment_token end as trade_payment_token
-                , trade.price as trade_price
-                , trade.platform as trade_platform
-                , trx.eth_value
-                , trx.from_address=trans.to_address as caller_is_receiver
-            from eth_token_transfers_{year} trans
-            join eth_contracts con
-                on con.address = trans.contract
-            join eth_transactions trx
-                on trx.trx_hash = trans.trx_hash
-                and trx.timestamp >= '{start_date}'
-            left join nft_trades trade
-                on trade.trx_hash = trans.trx_hash
-                and trade.timestamp >= '2022-01-01'
-            left join new_nft_contracts new
-                on trans.contract = new.address
-                and new.missing_trx_union
-            where con.is_nft
-                and (
-                    trx.timestamp >= '{start_date}'
-                    or new.address is not null
-                    )
-        )
-        , num_tokens as (
-            select
-                trx_hash
-            , count(distinct token_id_or_value) as num_tokens_in_the_same_transaction
-            from cet_nft_token_transfers
-            group by 1
-        )
+        create index cet_nft_token_transfers_idx_trx_hash on cet_nft_token_transfers (trx_hash);
+
+        drop table if exists cet_num_tokens;
+
+        create table cet_num_tokens as
+        select
+            trx_hash
+        , count(distinct token_id_or_value) as num_tokens_in_the_same_transaction
+        from cet_nft_token_transfers
+        group by 1
+        ;
+
+        create index cet_num_tokens_idx_trx_hash on cet_num_tokens (trx_hash);
+    ''')
+
+    df = utl.query_postgres(
+        sql='''
         select
             trans.timestamp
             , trans.trx_hash
@@ -352,13 +337,11 @@ def update_nft_trx_union(year=None, use_upsert=True):
                 end as action
             , caller_is_receiver
         from cet_nft_token_transfers trans
-        join num_tokens mul
+        join cet_num_tokens mul
             on trans.trx_hash = mul.trx_hash
         ;
-    """
-    df = utl.query_postgres(
-        sql,
-        columns=[
+        '''
+        , columns=[
             "timestamp",
             "trx_hash",
             "contract",
@@ -373,7 +356,12 @@ def update_nft_trx_union(year=None, use_upsert=True):
             "caller_is_receiver"
         ],
     )
-    utl.copy_from_df_to_postgres(df=df, table="nft_trx_union", use_upsert=use_upsert, key="trx_hash")
+    utl.query_postgres(sql='''
+    drop table cet_nft_token_transfers;
+    drop table cet_num_tokens;
+    ''')
+    utl.copy_from_df_to_postgres(df=df, table="nft_trx_union", use_upsert=False)
+
 
 
 # The EOD ownership of all the tokens based on token transfer data
@@ -412,9 +400,9 @@ def update_nft_contract_floor_price(date):
         select
             cast('{date}' as date)
             , contract
-            , percentile_disc(0.1) within group (order by price_per_token)
+            , percentile_disc(0.2) within group (order by price_per_token)
         from nft_trx_union
-        where timestamp >= date('{date}')
+        where timestamp >= date('{date}') - interval'1 days'
             and timestamp < date('{date}') + interval'1 days'
             and action = 'trade'
             and trade_payment_token in ('ETH', 'WETH')
@@ -549,52 +537,57 @@ def update_past_90_days_trading_roi():
 
     drop table if exists trade_roi_flat;
     create table trade_roi_flat as
-    select
-        buy.address
-        , buy.date as buy_date
-        , buy.contract
-        , buy.token_id
-        , buy.acquisition_floor_price
-        , sell.floor_price_in_eth as sell_floor_price
-        , fp.floor_price_in_eth as current_floor_price
-        , row_number() over (partition by buy.address, buy.contract, buy.token_id order by sell.date) as rnk
-    from cet_buy buy
-    left join cet_sell sell
-        on buy.address = sell.address
-        and buy.contract = sell.contract
-        and buy.token_id = sell.token_id
-        and sell.date >= buy.date
-    left join (
+    with cet as (
         select
-            contract
-            , floor_price_in_eth
-        from (
+            buy.address
+            , buy.date as buy_date
+            , buy.contract
+            , buy.token_id
+            , buy.acquisition_floor_price
+            , sell.floor_price_in_eth as sell_floor_price
+            , fp.floor_price_in_eth as current_floor_price
+            , row_number() over (partition by buy.address, buy.contract, buy.token_id order by sell.date) as rnk
+        from cet_buy buy
+        left join cet_sell sell
+            on buy.address = sell.address
+            and buy.contract = sell.contract
+            and buy.token_id = sell.token_id
+            and sell.date >= buy.date
+        left join (
             select
                 contract
                 , floor_price_in_eth
-                , row_number() over (partition by contract order by date desc) as rnk
-            from nft_contract_floor_price
-            where date >= now() - interval'3 days'
-        ) cet
-        where rnk = 1
-    ) fp -- current floor price
-        on fp.contract = buy.contract
-    ;
-    drop table if exists past_90_days_trading_roi;
-    create table past_90_days_trading_roi as
+            from (
+                select
+                    contract
+                    , floor_price_in_eth
+                    , row_number() over (partition by contract order by date desc) as rnk
+                from nft_contract_floor_price
+                where date >= now() - interval'3 days'
+            ) cet
+            where rnk = 1
+        ) fp -- current floor price
+            on fp.contract = buy.contract
+    )
     select
         address
-        , sum(coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price) as gain
-    from trade_roi_flat
-    group by 1
+        , buy_date
+        , contract
+        , token_id
+        , acquisition_floor_price
+        , sell_floor_price
+        , current_floor_price
+        , coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price as gain
+    from cet
+    where rnk = 1
     ;
-    create index trade_roi_flat_idx_address on trade_roi_flat (wallet);
+    create index trade_roi_flat_idx_address on trade_roi_flat (address);
 
     drop table if exists past_90_days_trading_roi;
     create table past_90_days_trading_roi as
     select
         address
-        , sum(coalesce(sell_floor_price, current_floor_price) - buy_floor_price) as gain
+        , sum(gain) as gain
     from trade_roi_flat
     group by 1
     ;

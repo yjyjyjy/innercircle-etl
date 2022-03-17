@@ -46,7 +46,7 @@ select * from eth_token_transfers where timestamp >= '2022-01-01' and timestamp 
 -- decoded trading information that happened on OpenSea etc.
 create table nft_trades (
 	timestamp timestamp
-	, trx_hash varchar
+	, trx_hash varchar primary key
 	, eth_value numeric
 	, payment_token varchar
 	, price numeric
@@ -54,7 +54,6 @@ create table nft_trades (
 )
 ;
 create index nft_trades_idx_timestamp on nft_trades (timestamp desc);
-create index nft_trades_idx_trx_hash on nft_trades (trx_hash);
 
 -- this table is to trigger backfill for newly identified NFT contracts
 create table new_nft_contracts (

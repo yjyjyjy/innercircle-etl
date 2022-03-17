@@ -253,13 +253,28 @@ def get_date_list(start_date=None, end_date=None, reverse=False):
         dates.reverse()
     return dates
 
+def delete_current_day_data(date, table, key="timestamp"):
+    gap = check_table_for_date_gaps(
+        table=table
+        , start_date=date
+        , end_date=date
+        , key=key)
 
-def get_previous_day(from_date=None):
+    if len(gap)==0: # there is existing data.
+        query_postgres(
+            sql = f"delete from {table} where date({key}) = '{date}'"
+        )
+
+def get_previous_day(from_date=None, num_days=1):
     dim_date = pd.read_csv("dim_dates.csv")
     if from_date == None:
         today = datetime.datetime.now().date().strftime("%Y-%m-%d")
         from_date = today
-    return dim_date.full_date[dim_date.full_date < from_date].max()
+    prev_day = dim_date.full_date[dim_date.full_date < from_date].max()
+    if num_days == 1:
+        return prev_day
+    else:
+        return get_previous_day(from_date=prev_day, num_days=num_days-1)
 
 
 # get max(timestamp of existing table)
@@ -277,7 +292,7 @@ def get_terminal_ts(table, end, offset=None, key="timestamp"):
 
 def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp"):
     dates = get_date_list(start_date=start_date, end_date=end_date)
-    end_date_clause = f"and {key} <= '{end_date}'" if end_date != None else ""
+    end_date_clause = f"and {key} <= date('{end_date}') + interval'1 day'" if end_date != None else ""
     sql = f"""
         select cast(date({key}) as varchar) as date
         from {table}
