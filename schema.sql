@@ -198,7 +198,7 @@ join owner_worth ow
 -- mapping logic from insider to circle
 create table insider_to_circle_mapping (
 	insider_id varchar not null
-	, owner_rank int not null
+	, owner_rank int
 	, circle_id int not null
 	, created_at date not null
 	, is_current BOOLEAN not null

@@ -481,6 +481,13 @@ def update_owner_collection_total_worth():
         from owner_collection_worth_ranked ocwr
         join owner_worth_ranked owr
             on ocwr.owner = owr.owner
+        left join address_metadata m
+            on owr.owner = m.id
+            and m.is_special_address
+        left join eth_contracts c
+            on owr.owner = c.address
+        where m.id is null
+            and c.address is null
         ;
     """
     utl.query_postgres(sql)
@@ -583,14 +590,52 @@ def update_past_90_days_trading_roi():
     ;
     create index trade_roi_flat_idx_address on trade_roi_flat (address);
 
-    drop table if exists past_90_days_trading_roi;
-    create table past_90_days_trading_roi as
+    drop table if exists cet_roi;
+    create table cet_roi as
     select
         address
-        , sum(gain) as gain
-    from trade_roi_flat
-    group by 1
+        , contract
+        , gain
+        , row_number() over (partition by address order by gain desc) as rnk
+    from (
+        select
+            roi.address
+            , roi.contract
+            , sum(gain) as gain
+        from trade_roi_flat roi
+        left join address_metadata m
+            on roi.address = m.id
+            and m.is_special_address
+        left join eth_contracts c
+            on roi.address = c.address
+        where m.id is null
+            and c.address is null
+        group by 1,2
+    ) a
+        where gain is not null
     ;
+
+    create index cet_roi_idx_address on cet_roi (address);
+
+    drop table if exists past_90_days_trading_roi;
+    create table past_90_days_trading_roi as
+    with total_roi as (
+        select
+            address
+            , sum(gain) as total_gain
+        from cet_roi
+        group by 1
+    )
+    select
+        roi.*
+        , t.total_gain
+    from cet_roi roi
+    join total_roi t
+        on roi.address = t.address
+    where gain is not null
+    ;
+    create index past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
+    drop table if exists cet_roi;
 
     -- drop table if exists trx_with_floor_price;
     -- drop table if exists cet_buy;
@@ -627,20 +672,55 @@ order by owner_rank
 limit 200
 ;
 
+insert into insider_staging
+with addresses as (
+    select
+        address
+    from (
+        select
+            address
+			, avg(total_gain) as total_gain
+            , sum(gain)/avg(total_gain) as pct
+        from past_90_days_trading_roi
+        where rnk = 1
+            and total_gain > 0
+            and gain > 0
+        group by 1
+    ) a
+    where pct < .9 -- avoid one time wonders
+    order by total_gain desc
+    limit 200
+)
+select
+    a.address
+    , w.owner_rank
+    , 2 as circle -- 'most profitable traders last 90 days'
+from addresses a
+left join (
+    select
+        owner as address
+        , min(owner_rank) as owner_rank
+    from owner_collection_total_worth
+    group by 1
+) w
+    on a.address = w.address
+;
+
+
 insert into insider (id)
 select source.insider_id as id
 from insider_staging source
 left join insider target
     on source.insider_id = target.id
 where target.id is null
+group by 1
 ;
+
+delete from insider_to_circle_mapping where created_at = date(now() - interval '1 day');
 
 update insider_to_circle_mapping
 set is_current = false
-where created_at < (select max(created_at) from insider_to_circle_mapping)
 ;
-
-delete from insider_to_circle_mapping where is_current;
 
 insert into insider_to_circle_mapping
 select
