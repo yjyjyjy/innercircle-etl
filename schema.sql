@@ -154,7 +154,6 @@ create table nft_contract_floor_price (
 )
 ;
 
-
 drop table if exists owner_collection_worth;
 create table owner_collection_worth as
 select
@@ -331,7 +330,8 @@ create table new_insight (
 	, foreign key (collection_id)  references collection(id)
 )
 ;
-create unique index "insight_unique_idx_insider_id_collection_id_action" on new_insight(insider_id, collection_id);
+create unique index "insight_unique_idx_insider_id_collection_id_action"
+	on new_insight(insider_id, collection_id, action);
 
 
 -- the logic of how contracts are considered endorsedd by each circle

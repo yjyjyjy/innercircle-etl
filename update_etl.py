@@ -894,13 +894,40 @@ def update_insight_trx():
     ''')
 
 def update_insight():  # insight -- insider acquisitions
-    sql = """
+    utl.query_postgres(sql="""
+        truncate table new_insight;
+        insert into new_insight
+        with trx as (
+            select
+                insider_id
+                , collection_id
+                , action
+                , sum(num_tokens) as num_tokens
+                , sum(total_eth_amount) as total_eth_amount
+                , max(date) as last_traded_at
+            from insight_trx
+            where insider_id in (
+                    select insider_id
+                    from insider_to_circle_mapping
+                        where circle_id = 2
+                    group by 1
+                )
+                and date >= date(now() - interval '7 day')
+            group by 1,2,3
+        )
+        select
+            trx.*
+            , coalesce(p.num_tokens, 0) as num_tokens_owned
+        from trx
+        left join insider_portfolio p
+            on trx.insider_id = p.insider_id
+            and trx.collection_id = p.collection_id
+        ;
+    """)
 
-    """
-    utl.query_postgres(sql=sql)
-
-
-def update_circle_collection():  # contract_to_circle_mappin find new contracts that belongs to each circle
+############# SUSPENDED ##################
+def update_circle_collection():
+# contract_to_circle_mappin find new contracts that belongs to each circle
     sql = """
 insert into collection_to_circle_mapping
 with new as (
@@ -917,6 +944,7 @@ with new as (
 		from insider_to_circle_mapping c
 		join insight i
 			on c.insider_id = i.insider_id
+            and i.action = 'buy'
 		where c.is_current
             and c.circle_id = 1 -- top 200 whales
 	) a
