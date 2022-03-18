@@ -895,8 +895,8 @@ def update_insight_trx():
 
 def update_insight():  # insight -- insider acquisitions
     utl.query_postgres(sql="""
-        truncate table new_insight;
-        insert into new_insight
+        truncate table insight;
+        insert into insight
         with trx as (
             select
                 insider_id

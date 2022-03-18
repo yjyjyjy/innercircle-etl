@@ -311,16 +311,6 @@ create unique index insight_trx_unique_idx
 create table insight (
 	insider_id varchar not null -- eth address
 	, collection_id varchar not null
-	, started_at timestamp not null
-	, total_eth_spent numeric not null
-	, foreign key (insider_id)  references insider(id)
-	, foreign key (collection_id)  references collection(id)
-);
-create unique index "insight_unique_idx_insider_id_collection_id" on insight(insider_id, collection_id);
-
-create table new_insight (
-	insider_id varchar not null -- eth address
-	, collection_id varchar not null
 	, action varchar not null
 	, num_tokens int not null
 	, total_eth_amount numeric not null
@@ -331,7 +321,7 @@ create table new_insight (
 )
 ;
 create unique index "insight_unique_idx_insider_id_collection_id_action"
-	on new_insight(insider_id, collection_id, action);
+	on insight(insider_id, collection_id, action);
 
 
 -- the logic of how contracts are considered endorsedd by each circle
