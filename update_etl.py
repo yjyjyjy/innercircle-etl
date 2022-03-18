@@ -948,7 +948,7 @@ with new as (
 		where c.is_current
             and c.circle_id = 1 -- top 200 whales
 	) a
-		where nth_insider = 3 -- register when there are the three insider or more
+		-- where nth_insider = 3 -- register when there are the three insider or more (NOT ACTIVE)
 )
 select
 	new.*
