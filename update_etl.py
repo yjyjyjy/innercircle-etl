@@ -864,7 +864,7 @@ def update_insight_trx():
 	join cet_buy t
 		on i.insider_id = t.address
 		and i.is_current
-		and t.address in (
+		and t.contract in (
         select id from collection group by 1
         )
 	group by 1,2,3,4,5
@@ -881,7 +881,7 @@ def update_insight_trx():
 	join cet_sell t
 		on i.insider_id = t.address
 		and i.is_current
-		and t.address in (
+		and t.contract in (
         select id from collection group by 1
         )
 	group by 1,2,3,4,5

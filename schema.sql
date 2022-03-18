@@ -302,6 +302,12 @@ create table insight (
 );
 create unique index "insight_unique_idx_insider_id_collection_id" on insight(insider_id, collection_id);
 
+create table new_insight (
+	insider_id varchar not null -- eth address
+	,
+)
+
+
 -- the logic of how contracts are considered endorsedd by each circle
 create table collection_to_circle_mapping (
 	collection_id varchar not null
