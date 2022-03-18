@@ -108,17 +108,43 @@ create table nft_trx_union (
 )
 ;
 create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
-create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
-create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
-create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
-create index nft_trx_union_idx_action on nft_trx_union (action);
+create index nft_trx_union_idx_contract on nft_trx_union (contract);
+-- create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
+-- create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
+-- create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
+-- create index nft_trx_union_idx_action on nft_trx_union (action);
 
 create table nft_ownership (
 	contract varchar,
 	token_id varchar,
-	owner varchar,
+	address varchar,
+	last_transferred_at timestamp,
 	PRIMARY KEY(contract, token_id)
 );
+create index nft_ownership_idx_address on nft_ownership (address);
+
+-- backfill nft_ownership
+drop table if exists nft_ownership;
+create table nft_ownership as
+with cet as (
+	select
+		contract
+		, token_id
+		, to_address
+		, timestamp
+		, row_number() over (partition by contract, token_id order by timestamp desc) as rnk
+	from nft_trx_union
+)
+select
+	contract
+	, token_id
+	, to_address as address
+	, timestamp as last_transferred_at
+from cet
+where rnk = 1
+;
+create index nft_ownership_idx_address on nft_ownership (address);
+ALTER TABLE nft_ownership ADD PRIMARY KEY (contract, token_id);
 
 create table nft_contract_floor_price (
 	date date,
@@ -127,6 +153,7 @@ create table nft_contract_floor_price (
 	primary key (date, contract)
 )
 ;
+
 
 drop table if exists owner_collection_worth;
 create table owner_collection_worth as
@@ -225,7 +252,7 @@ create table address_metadata (
 	, public_name_tag varchar
 	, is_contract BOOLEAN
 	, is_special_address boolean
-	, special_account_type varchar
+	, special_address_type varchar
 	, opensea_user_created_at timestamp
 	, opensea_display_name varchar
 	, opensea_banner_image_url varchar
@@ -245,20 +272,25 @@ create index address_metadata_idx_is_special_address on address_metadata (is_spe
 
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (
-	insider_id varchar not null -- eth address
-	, collection_id varchar not null
-	, timestamp timestamp not null
-	, token_id varchar not null
-	, action varchar not null
-	, trx_hash varchar not null
-	, eth_value_per_token numeric not null
-	, nth_trx int not null -- the nth acquisition of the same insider and collection
-	, created_at date not null
+	date date  not null
+	, insider_id varchar(100) not null
+	, action varchar(100) not null
+	, collection_id varchar(100)  not null
+	, floor_price_in_eth numeric
+	, num_tokens int not null
+	, total_eth_amount numeric not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
-);
-create unique index "insight_trx_unique_idx_insider_id_collection_id_nth_trx" ON insight_trx(insider_id, collection_id, token_id, nth_trx);
-create unique index "insight_trx_unique_idx_trx_hash_token_id" ON insight_trx(trx_hash, token_id);
+)
+;
+create unique index insight_trx_unique_idx
+	on insight_trx (
+		date
+		, insider_id
+		, action
+		, collection_id
+	)
+;
 
 create table insight (
 	insider_id varchar not null -- eth address
@@ -314,13 +346,6 @@ create index eth_token_transfers_2021_idx_contract on eth_token_transfers_2021 (
 
 create index eth_token_transfers_2022_idx_timestamp on eth_token_transfers_2022 (timestamp desc);
 create index eth_token_transfers_2022_idx_contract on eth_token_transfers_2022 (contract desc);
-
-
-
-
-create index nft_ownership_idx_owner on nft_ownership (owner);
-create index nft_ownership_idx_contract on nft_ownership (contract);
-create index nft_ownership_idx_token_id on nft_ownership (token_id);
 
 create index eth_transactions_idx_timestamp on eth_transactions (timestamp desc);
 create index eth_transactions_idx_trx_hash on eth_transactions (trx_hash desc);
