@@ -232,7 +232,7 @@ create table insider_to_circle_mapping (
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (circle_id)  references circle(id)
 );
-create unique index "insider_to_circle_mapping_unique_idx_insider_id_circle_id_created_at" ON insider_to_circle_mapping(insider_id, circle_id, created_at);
+create unique index insider_to_circle_mapping_unique_idx_insider_id_circle_id_created_at ON insider_to_circle_mapping(insider_id, circle_id, created_at);
 create index insider_to_circle_mapping_idx_is_current on insider_to_circle_mapping (is_current);
 
 create table circle (
@@ -270,6 +270,23 @@ create index address_metadata_idx_email on address_metadata (email);
 create index address_metadata_idx_is_contract on address_metadata (is_contract);
 create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
 
+create table insider_portfolio (
+	insider_id varchar not null
+	, address_rank int
+	, collection_id varchar not null
+	, num_tokens int not null
+	, floor_price_in_eth numeric
+	, collection_worth numeric
+	, collection_rank_in_portfolio int
+	, total_worth numeric
+	, collection_pct_total numeric
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
+)
+;
+create unique index insider_portfolio_idx_unique on insider_portfolio (insider_id, collection_id, num_tokens);
+
+
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (
 	date date  not null
@@ -304,8 +321,17 @@ create unique index "insight_unique_idx_insider_id_collection_id" on insight(ins
 
 create table new_insight (
 	insider_id varchar not null -- eth address
-	,
+	, collection_id varchar not null
+	, action varchar not null
+	, num_tokens int not null
+	, total_eth_amount numeric not null
+	, last_traded_at timestamp not null
+	, num_tokens_owned int not null
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
 )
+;
+create unique index "insight_unique_idx_insider_id_collection_id_action" on new_insight(insider_id, collection_id);
 
 
 -- the logic of how contracts are considered endorsedd by each circle

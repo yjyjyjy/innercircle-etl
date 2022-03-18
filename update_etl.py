@@ -437,6 +437,11 @@ def update_nft_ownership(): # recreate script in the schema table
         where timestamp > (select max(last_transferred_at) from nft_ownership)
     ) a
     where rnk = 1
+        and contract in (
+            select id
+            from collection
+            group by 1
+        )
     ;
 
     create index cet_updated_trx_idx_contract_token_id on cet_updated_trx (contract, token_id);
@@ -830,12 +835,12 @@ def update_circle_insider():  # insider_to_circle_mapping
 
 def update_insider_portfolio():
     utl.query_postgres(sql='''
-    drop table if exists insider_portfolio;
-    create table insider_portfolio as
+    truncate table insider_portfolio;
+    insert into insider_portfolio
     select
         i.id as insider_id
         , o.address_rank
-        , o.contract
+        , o.contract as collection_id
         , o.num_tokens
         , o.floor_price_in_eth
         , o.collection_worth
@@ -843,7 +848,7 @@ def update_insider_portfolio():
         , o.total_worth
         , o.collection_pct_total
     from insider i
-    left join address_collection_total_worth o -- what they own
+    join address_collection_total_worth o -- what they own
         on i.id = o.address
     ;
     ''')
@@ -890,65 +895,7 @@ def update_insight_trx():
 
 def update_insight():  # insight -- insider acquisitions
     sql = """
-        insert into insight_trx
-        with cet as (
-            select
-                c.insider_id
-                , t.contract as collection_id
-                , t.timestamp
-                , t.token_id
-                , t.action
-                , t.trx_hash
-                , price_per_token
-            from insider_to_circle_mapping c
-            join nft_trx_union t
-                on c.insider_id = t.to_address
-            where action in ('mint', 'trade')
-                and c.is_current -- current insiders only
-                and t.timestamp > (select max(timestamp) from insight_trx)
-                and t.price_per_token > 0 -- making sure they actually spent their eth
-                and (t.trade_payment_token is null or t.trade_payment_token in ('ETH', 'WETH'))
-            union all
-            select
-                insider_id
-                , collection_id
-                , timestamp
-                , token_id
-                , action
-                , trx_hash
-                , price_per_token
-            from insight_trx
-        )
-        select
-            s.insider_id
-            , s.collection_id
-            , s.timestamp
-            , s.token_id
-            , s.action
-            , s.trx_hash
-            , s.price_per_token
-            , row_number() over (
-                partition by s.insider_id, s.collection_id order by s.timestamp
-            ) as nth_trx -- the nth acquisition of the same insider and collection
-            , date(now() - interval '1 day') as created_at
-        from cet s
-        left join insight_trx t
-            on s.trx_hash = t.trx_hash
-            and s.token_id = t.token_id
-        where date(now() - interval '1 day') > (select max(created_at) from insight_trx)
-            and s.timestamp >= (select max(timestamp) from insight_trx)
-            and t.trx_hash is null
-        ;
-        truncate table insight;
-        insert into insight
-        select
-            insider_id
-            , collection_id
-            , min(timestamp) as started_at
-            , sum(price_per_token) as total_eth_spent
-        from insight_trx
-        group by 1,2
-        ;
+
     """
     utl.query_postgres(sql=sql)
 
