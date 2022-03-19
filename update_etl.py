@@ -967,12 +967,14 @@ def update_post():
     insert into post (collection_id, created_at)
     select
         source.collection_id
-        , date(source.created_at) + interval '1 day'
+        , min(date(source.started_at)) + interval '1 day'
     from collection_to_circle_mapping source
     left join post target
         on source.collection_id = target.collection_id
-    where source.created_at >= '2021-06-01'
+    where source.started_at >= '2021-06-01'
         and target.collection_id is null
+        and source.circle_id = 2 -- 1 is diabled for now
+    group by 1
     ;
     """
     utl.query_postgres(sql=sql)

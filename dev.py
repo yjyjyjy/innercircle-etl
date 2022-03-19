@@ -1,4 +1,4 @@
 import update_etl as up
 import etl_utls as utl
 
-up.update_circle_collection()
+up.update_post()
