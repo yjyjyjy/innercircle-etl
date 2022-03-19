@@ -395,6 +395,48 @@ def update_nft_trx_union(date):
     ''')
     utl.copy_from_df_to_postgres(df=df, table="nft_trx_union", use_upsert=False)
 
+def update_first_acquisition():
+    max_ts = utl.get_terminal_ts(table='first_acquisition', end='max', key="timestamp")
+    utl.query_postgres(sql=f'''
+        drop table if exists cet_source;
+        create table cet_source as
+        select
+            timestamp
+            , trx_hash
+            , contract
+            , token_id
+            , from_address
+            , to_address
+            , trade_platform
+            , trade_payment_token
+            , num_tokens_in_the_same_transaction
+            , price_per_token
+            , action
+            , caller_is_receiver
+        from (
+            select
+                *
+                , row_number() over (partition by contract, to_address order by timestamp) as rnk
+            from nft_trx_union
+            where timestamp > '{max_ts}'
+        ) a
+        where rnk = 1;
+
+        create index cet_source_idx on cet_source (contract, to_address);
+
+        insert into first_acquisition
+        select
+            s.*
+        from cet_source s
+        left join first_acquisition t
+            on s.contract = t.contract
+            and s.to_address = t.to_address
+        where t.contract is null
+        ;
+
+        drop table if exists cet_source;
+    ''')
+
 def update_nft_contract_floor_price(date):
     print("🦄🦄 update_nft_contract_floor_price: " + date)
     sql = f"""
