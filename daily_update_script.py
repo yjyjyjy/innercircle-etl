@@ -53,6 +53,8 @@ date_gaps = utl.check_table_for_date_gaps(
 for date in date_gaps:
     up.update_nft_trx_union(date)
 
+up.update_first_acquisition()
+
 ################ floor price ############
 date_gaps = utl.check_table_for_date_gaps(
     table="nft_contract_floor_price"
