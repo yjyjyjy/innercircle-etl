@@ -129,8 +129,9 @@ def update_contracts(date):
     """
     utl.copy_from_google_bigquery_to_postgres(
         sql=sql,
-        table="eth_contracts"
-        # not using upsert because of primary key constraint
+        table="eth_contracts",
+        use_upsert=True,
+        key='address'
     )
 
 
