@@ -154,72 +154,14 @@ create table nft_contract_floor_price (
 )
 ;
 
-drop table if exists owner_collection_worth;
-create table owner_collection_worth as
-select
-	o.owner
-	, o.contract
-	, p.floor_price_in_eth
-	, count(distinct o.token_id) as collection_value
-from nft_ownership o
-join nft_contract_floor_price p
-	on p.contract = o.contract
-where p.date = '2022-01-03'-- {yesterday}
-group by 1,2,3
-;
-
-create table owner_collection_total_worth as
-with base as (
-	select
-		o.owner
-		, o.contract
-		, p.floor_price_in_eth
-		, count(distinct o.token_id) as num_tokens
-	from nft_ownership o
-	join nft_contract_floor_price p
-		on p.contract = o.contract
-	where p.date = '2022-01-03'-- {yesterday}
-	group by 1,2,3
-)
-, owner_collection_worth as (
-	select
-		owner
-		, contract
-		, floor_price_in_eth * num_tokens as collection_worth
-	from base
-)
-, owner_collection_worth_ranked as (
-	select
-		owner
-		, contract
-		, collection_worth
-		, row_number() over (partition by owner order by collection_worth desc) as rnk
-	from owner_collection_worth
-)
-, top_collection_weight as (
-	select
-		owner
-		, sum(case when rnk = 1 then collection_worth end)/sum(collection_worth) as top_collection_weight
-	from owner_collection_worth_ranked
-	group by 1
-)
-, owner_worth as (
-	select
-		owner
-		, sum(collection_worth) as total_worth
-	from owner_collection_worth
-	group by 1
-)
-select
-	ocwr.owner
-	, ocwr.contract
-	, ocwr.collection_worth
-	, rnk
-	, total_worth
-from owner_collection_worth_ranked ocwr
-join owner_worth ow
-	on ocwr.owner = ow.owner
-;
+create table past_90_days_trading_roi (
+	address varchar(100) not null
+	, contract varchar(100) not null
+	, gain numeric not null
+	, collection_gain_rank_in_portfolio int not null
+	, total_gain numeric not null
+);
+create past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
 
 -- mapping logic from insider to circle
 create table insider_to_circle_mapping (
@@ -316,6 +258,7 @@ create table insight (
 	, total_eth_amount numeric not null
 	, last_traded_at timestamp not null
 	, num_tokens_owned int not null
+	, past_90_days_trading_gain numeric not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
 )

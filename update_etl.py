@@ -715,9 +715,9 @@ def update_past_90_days_trading_roi():
     ''')
 
     utl.query_postgres(sql = '''
-        drop table if exists past_90_days_trading_roi;
+        truncate table past_90_days_trading_roi;
 
-        create table past_90_days_trading_roi as
+        insert into past_90_days_trading_roi
         with total_roi as (
             select
                 address
@@ -726,16 +726,17 @@ def update_past_90_days_trading_roi():
             group by 1
         )
         select
-            roi.*
+            roi.address
+            , roi.contract
+            , roi.rnk as collection_gain_rank_in_portfolio
             , t.total_gain
         from cet_roi roi
         join total_roi t
             on roi.address = t.address
         where gain is not null
         ;
-        create index past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
-        drop table if exists cet_roi;
 
+        drop table if exists cet_roi;
 
         -- drop table if exists trx_with_floor_price;
         -- drop table if exists cet_buy;
@@ -896,7 +897,6 @@ def update_insight_trx():
 
 def update_insight():  # insight -- insider acquisitions
     utl.query_postgres(sql="""
-        truncate table insight;
         insert into insight
         with trx as (
             select
@@ -916,13 +916,23 @@ def update_insight():  # insight -- insider acquisitions
                 and date >= date(now() - interval '7 day')
             group by 1,2,3
         )
+        , gain as (
+            select
+                address
+                , max(total_gain) as past_90_days_trading_gain -- should only have 1 per address but just to be safe
+            from past_90_days_trading_roi
+            group by 1
+        )
         select
             trx.*
             , coalesce(p.num_tokens, 0) as num_tokens_owned
+            , coalesce(g.past_90_days_trading_gain, 0) as past_90_days_trading_gain
         from trx
         left join insider_portfolio p
             on trx.insider_id = p.insider_id
             and trx.collection_id = p.collection_id
+        left join gain g
+            on trx.insider_id = g.address
         ;
     """)
 
