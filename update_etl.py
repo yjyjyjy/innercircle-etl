@@ -929,35 +929,35 @@ def update_insight():  # insight -- insider acquisitions
 def update_circle_collection():
 # contract_to_circle_mappin find new contracts that belongs to each circle
     sql = """
-insert into collection_to_circle_mapping
-with new as (
-	select
-		collection_id
-		, circle_id
-		, date(started_at)
-	from (
-		select
-			c.circle_id
-			, i.collection_id
-			, i.started_at
-			, row_number() over (partition by i.collection_id order by i.started_at) as nth_insider
-		from insider_to_circle_mapping c
-		join insight i
-			on c.insider_id = i.insider_id
-            and i.action = 'buy'
-		where c.is_current
-            and c.circle_id = 1 -- top 200 whales
-	) a
-		-- where nth_insider = 3 -- register when there are the three insider or more (NOT ACTIVE)
-)
-select
-	new.*
-from new
-left join collection_to_circle_mapping old
-	on new.circle_id = old.circle_id
-	and new.collection_id = old.collection_id
-where old.collection_id is null
-;
+        insert into collection_to_circle_mapping
+        with new as (
+            select
+                collection_id
+                , circle_id
+                , date(started_at) as started_at
+            from (
+                select
+                    i.collection_id
+                    , c.circle_id
+                    , min(date) as started_at
+                from insider_to_circle_mapping c
+                join insight_trx i
+                    on c.insider_id = i.insider_id
+                    and i.action = 'buy'
+                where c.is_current
+                group by 1,2
+            ) a
+        )
+        select
+            new.collection_id
+            , new.circle_id
+            , new.started_at
+        from new
+        left join collection_to_circle_mapping old
+            on new.circle_id = old.circle_id
+            and new.collection_id = old.collection_id
+        where old.collection_id is null
+        ;
     """
     utl.query_postgres(sql=sql)
 

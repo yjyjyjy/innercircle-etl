@@ -1,4 +1,4 @@
 import update_etl as up
 import etl_utls as utl
 
-up.update_insight()
+up.update_circle_collection()

@@ -328,7 +328,7 @@ create unique index "insight_unique_idx_insider_id_collection_id_action"
 create table collection_to_circle_mapping (
 	collection_id varchar not null
 	, circle_id int not null
-	, created_at date not null
+	, started_at date not null
 	, foreign key (collection_id)  references collection(id)
 	, foreign key (circle_id)  references circle(id)
 );
