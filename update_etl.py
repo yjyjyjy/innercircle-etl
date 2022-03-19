@@ -1079,17 +1079,40 @@ def update_circle_collection():
 
 def update_post():
     sql = """
-    insert into post (collection_id, created_at)
+    insert into post (collection_id, created_at, feed_importance_score)
     select
         source.collection_id
         , min(date(source.started_at)) + interval '1 day'
+        , 0 -- default value
     from collection_to_circle_mapping source
     left join post target
         on source.collection_id = target.collection_id
     where source.started_at >= '2021-06-01'
         and target.collection_id is null
-        and source.circle_id = 2 -- 1 is diabled for now
+        and source.circle_id = 2 -- 🤯 hack: 1 is diabled for now
     group by 1
+    ;
+
+    update post
+    set feed_importance_score = 0;
+
+    update post
+    set feed_importance_score = fis.feed_importance_score
+    from (
+        select
+            collection_id
+            , sum(feed_importance_score) as feed_importance_score
+        from (
+            select
+                collection_id
+                , feed_importance_score
+                , row_number() over (partition by collection_id order by feed_importance_score desc) as rnk
+            from insight -- 🤯 hack: 1 is diabled for now
+        ) a
+        where rnk <= 3 -- only the most important 3 insights bc insights beyond that are likely hidden by UI
+        group by 1
+    ) fis
+    where post.collection_id = fis.collection_id
     ;
     """
     utl.query_postgres(sql=sql)

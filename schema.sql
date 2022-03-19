@@ -287,6 +287,7 @@ create table post (
 	id serial primary key
 	, collection_id varchar not null
 	, created_at date not null
+	, feed_importance_score numeric not null
 	, foreign key (collection_id) references collection(id)
 );
 
