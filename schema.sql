@@ -103,7 +103,7 @@ create table nft_trx_union (
 	, trade_payment_token varchar
 	, num_tokens_in_the_same_transaction int
 	, price_per_token numeric
-	, action varchar --
+	, action varchar --transfer (137249), mint (121408), trade (68903), burn (4431)
 	, caller_is_receiver BOOLEAN -- meaning the wallet received the token initiated the call
 )
 ;
@@ -258,11 +258,17 @@ create table insight (
 	, total_eth_amount numeric not null
 	, last_traded_at timestamp not null
 	, num_tokens_owned int not null
+	, insight_time_decay numeric not null
 	, past_90_days_trading_gain numeric not null
+	, pct_trades_profitable numeric not null
+	, circle_collection_first_ts timestamp not null
+	, insider_collection_first_ts timestamp not null
+	, circle_collection_first_time_decay numeric not null
+	, insider_collection_first_time_decay numeric not null
+	, feed_importance_score numeric not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
-)
-;
+);
 create unique index "insight_unique_idx_insider_id_collection_id_action"
 	on insight(insider_id, collection_id, action);
 

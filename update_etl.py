@@ -692,12 +692,12 @@ def update_past_90_days_trading_roi():
             address
             , contract
             , gain
-            , row_number() over (partition by address order by gain desc) as rnk
+            , row_number() over (partition by address order by gain desc) as collection_gain_rank_in_portfolio
         from (
             select
                 roi.address
                 , roi.contract
-                , sum(gain) as gain
+                , coalesce(sum(gain), 0) as gain -- treat null gain as 0.. this is debatable
             from trade_roi_flat roi
             left join address_metadata m
                 on roi.address = m.id
@@ -708,7 +708,6 @@ def update_past_90_days_trading_roi():
                 and c.address is null
             group by 1,2
         ) a
-            where gain is not null
         ;
 
         create index cet_roi_idx_address on cet_roi (address);
@@ -718,7 +717,7 @@ def update_past_90_days_trading_roi():
         truncate table past_90_days_trading_roi;
 
         insert into past_90_days_trading_roi
-        with total_roi as (
+        with total_gain as (
             select
                 address
                 , sum(gain) as total_gain
@@ -728,12 +727,12 @@ def update_past_90_days_trading_roi():
         select
             roi.address
             , roi.contract
-            , roi.rnk as collection_gain_rank_in_portfolio
+            , roi.gain
+            , roi.collection_gain_rank_in_portfolio
             , t.total_gain
         from cet_roi roi
-        join total_roi t
+        join total_gain t
             on roi.address = t.address
-        where gain is not null
         ;
 
         drop table if exists cet_roi;
@@ -897,6 +896,7 @@ def update_insight_trx():
 
 def update_insight():  # insight -- insider acquisitions
     utl.query_postgres(sql="""
+        truncate table insight;
         insert into insight
         with trx as (
             select
@@ -911,6 +911,7 @@ def update_insight():  # insight -- insider acquisitions
                     select insider_id
                     from insider_to_circle_mapping
                         where circle_id = 2
+                            and is_current
                     group by 1
                 )
                 and date >= date(now() - interval '7 day')
@@ -923,16 +924,77 @@ def update_insight():  # insight -- insider acquisitions
             from past_90_days_trading_roi
             group by 1
         )
+        , accuracy as (
+            select
+                address
+                , count(distinct case when gain > 0 then contract end)*1.0
+                    /count(distinct contract)
+                as pct_trades_profitable
+            from past_90_days_trading_roi
+            group by 1
+        )
+        , endorsement as (
+            select
+                i.id as insider_id
+                , f.contract
+                , min(timestamp) as timestamp
+            from first_acquisition f
+            join insider i
+                on f.to_address = i.id
+            group by 1,2
+        )
+        , circle_first as (
+            select
+                m.circle_id
+                , e.contract
+                , min(e.timestamp) as timestamp
+            from endorsement e
+            join insider_to_circle_mapping m
+                on e.insider_id = m.insider_id
+            where circle_id = 2 -- 🤯 temp hack. Only do circle 2 for now.
+            group by 1,2
+        )
+        , base as (
+            select
+                -- display factors
+                trx.insider_id
+                , trx.collection_id
+                , trx.action
+                , trx.num_tokens
+                , trx.total_eth_amount
+                , trx.last_traded_at
+                , coalesce(p.num_tokens, 0) as num_tokens_owned
+                -- ranking inputs
+                , power(.8, date(now())-cast(trx.last_traded_at as date) + 1) as insight_time_decay
+                , coalesce(g.past_90_days_trading_gain, 0) as past_90_days_trading_gain
+                , coalesce(accu.pct_trades_profitable, 0) as pct_trades_profitable
+                , cir_fir.timestamp as circle_collection_first_ts
+                , per_fir.timestamp as insider_collection_first_ts
+                , power(.8, date(now())-cast(cir_fir.timestamp as date) + 1) as circle_collection_first_time_decay
+                , power(.8, date(now())-cast(per_fir.timestamp as date) + 1) as insider_collection_first_time_decay
+            from trx
+            left join insider_portfolio p
+                on trx.insider_id = p.insider_id
+                and trx.collection_id = p.collection_id
+            left join gain g
+                on trx.insider_id = g.address
+            left join accuracy accu
+                on trx.insider_id = accu.address
+            left join circle_first cir_fir -- it should be a inner join but use left join to detect any issues.
+                on cir_fir.contract = trx.collection_id
+            left join endorsement per_fir
+                on per_fir.contract = trx.collection_id
+                and per_fir.insider_id = trx.insider_id
+        )
         select
-            trx.*
-            , coalesce(p.num_tokens, 0) as num_tokens_owned
-            , coalesce(g.past_90_days_trading_gain, 0) as past_90_days_trading_gain
-        from trx
-        left join insider_portfolio p
-            on trx.insider_id = p.insider_id
-            and trx.collection_id = p.collection_id
-        left join gain g
-            on trx.insider_id = g.address
+            *
+            , past_90_days_trading_gain/(select max(total_eth_amount) from trx) * 2 -- gain factor x2 is the weight booster
+                + pct_trades_profitable * 1.5 -- accuracy factor
+                + insight_time_decay * 1.2 -- recency / freshness
+                + circle_collection_first_time_decay -- being first
+                + insider_collection_first_time_decay -- new endorser
+                as feed_importance_score
+        from base
         ;
     """)
 
