@@ -157,11 +157,31 @@ create table nft_contract_floor_price (
 create table past_90_days_trading_roi (
 	address varchar(100) not null
 	, contract varchar(100) not null
+	, buy_date date not null
+	, buy_eth_amount numeric not null
 	, gain numeric not null
+	, roi_pct numeric not null
 	, collection_gain_rank_in_portfolio int not null
 	, total_gain numeric not null
 );
-create past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
+create index past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
+create unique index past_90_days_trading_roi_idx_address_contract on past_90_days_trading_roi (address, contract);
+
+create table insider_past_90_days_trading_roi (
+	insider_id varchar(100) not null
+	, collection_id varchar(100) not null
+	, buy_date date not null
+	, buy_eth_amount numeric not null
+	, gain numeric not null
+	, roi_pct numeric not null
+	, collection_gain_rank_in_portfolio int not null
+	, total_gain numeric not null
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
+);
+create index insider_past_90_days_trading_roi_idx_insider_id on insider_past_90_days_trading_roi (insider_id);
+create unique index insider_past_90_days_trading_roi_idx_address_contract on insider_past_90_days_trading_roi (insider_id, collection_id);
+
 
 -- mapping logic from insider to circle
 create table insider_to_circle_mapping (

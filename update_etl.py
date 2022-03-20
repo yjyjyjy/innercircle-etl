@@ -685,6 +685,7 @@ def update_past_90_days_trading_roi():
                 , buy.contract
                 , buy.token_id
                 , buy.acquisition_floor_price
+                , buy.price_per_token as buy_eth_amount
                 , sell.floor_price_in_eth as sell_floor_price
                 , fp.floor_price_in_eth as current_floor_price
                 , row_number() over (partition by buy.address, buy.contract, buy.token_id order by sell.date) as rnk
@@ -705,7 +706,7 @@ def update_past_90_days_trading_roi():
                         , row_number() over (partition by contract order by date desc) as rnk
                     from nft_contract_floor_price
                     where date >= now() - interval'3 days'
-                ) cet
+                    ) f
                 where rnk = 1
             ) fp -- current floor price
                 on fp.contract = buy.contract
@@ -715,10 +716,11 @@ def update_past_90_days_trading_roi():
             , buy_date
             , contract
             , token_id
+            , buy_eth_amount
             , acquisition_floor_price
             , sell_floor_price
             , current_floor_price
-            , coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price as gain
+            , coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price as gain -- 🔥 def of gain
         from cet
         where rnk = 1
         ;
@@ -727,19 +729,24 @@ def update_past_90_days_trading_roi():
     ''')
 
     utl.query_postgres(sql = '''
+        -- staging table before appending wallet total gain
         drop table if exists cet_roi;
-
         create table cet_roi as
         select
             address
             , contract
+            , buy_date
+            , buy_eth_amount
             , gain
+            , gain*1.0/buy_eth_amount as roi_pct
             , row_number() over (partition by address order by gain desc) as collection_gain_rank_in_portfolio
         from (
             select
                 roi.address
                 , roi.contract
-                , coalesce(sum(gain), 0) as gain -- treat null gain as 0.. this is debatable
+                , min(buy_date) as buy_date
+                , sum(buy_eth_amount) as buy_eth_amount
+                , coalesce(sum(gain), 0) as gain -- 🤷 treat null gain as 0.. this is debatable
             from trade_roi_flat roi
             left join address_metadata m
                 on roi.address = m.id
@@ -769,7 +776,10 @@ def update_past_90_days_trading_roi():
         select
             roi.address
             , roi.contract
+            , roi.buy_date
+            , roi.buy_eth_amount
             , roi.gain
+            , roi.roi_pct
             , roi.collection_gain_rank_in_portfolio
             , t.total_gain
         from cet_roi roi
@@ -783,6 +793,25 @@ def update_past_90_days_trading_roi():
         -- drop table if exists cet_buy;
         -- drop table if exists cet_sell;
         -- drop table if exists trade_roi_flat;
+    ''')
+
+    utl.query_postgres(sql = '''
+    truncate table insider_past_90_days_trading_roi;
+    insert into insider_past_90_days_trading_roi
+    select
+        *
+    from past_90_days_trading_roi
+    where address in (
+            select id
+            from insider
+            group by 1
+        )
+        and contract in (
+            select id
+            from collection
+            group by 1
+        )
+    ;
     ''')
 
 ######################### Insider, circles, insights, Posts #########################
@@ -821,7 +850,7 @@ def update_circle_insider():  # insider_to_circle_mapping
                     , avg(total_gain) as total_gain
                     , sum(gain)/avg(total_gain) as pct
                 from past_90_days_trading_roi
-                where rnk = 1
+                where collection_gain_rank_in_portfolio = 1
                     and total_gain > 0
                     and gain > 0
                 group by 1
@@ -936,7 +965,7 @@ def update_insight_trx():
     ;
     ''')
 
-def update_insight():  # insight -- insider acquisitions
+def update_insight():  # insifght -- insider acquisitions
     utl.query_postgres(sql="""
         truncate table insight;
         insert into insight
