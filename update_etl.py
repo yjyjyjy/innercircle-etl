@@ -647,9 +647,8 @@ def update_past_90_days_trading_roi():
             , token_id
             , floor_price_in_eth
             , price_per_token
-            , coalesce(floor_price_in_eth, price_per_token) as acquisition_floor_price
         from trx_with_floor_price
-        group by 1,2,3,4,5,6,7
+        group by 1,2,3,4,5,6
         ;
 
         create index buy_idx_address_contract_token_id on cet_buy (address, contract, token_id);
@@ -684,9 +683,10 @@ def update_past_90_days_trading_roi():
                 , buy.date as buy_date
                 , buy.contract
                 , buy.token_id
-                , buy.acquisition_floor_price
+                , buy.floor_price_in_eth as buy_floor_price
                 , buy.price_per_token as buy_eth_amount
                 , sell.floor_price_in_eth as sell_floor_price
+                , sell.price_per_token as sell_eth_amount
                 , fp.floor_price_in_eth as current_floor_price
                 , row_number() over (partition by buy.address, buy.contract, buy.token_id order by sell.date) as rnk
             from cet_buy buy
@@ -717,10 +717,10 @@ def update_past_90_days_trading_roi():
             , contract
             , token_id
             , buy_eth_amount
-            , acquisition_floor_price
+            , coalesce(buy_floor_price, buy_eth_amount) as acquisition_floor_price
             , sell_floor_price
             , current_floor_price
-            , coalesce(sell_floor_price, current_floor_price) - acquisition_floor_price as gain -- 🔥 def of gain
+            , coalesce(sell_floor_price, current_floor_price, 0) - coalesce(buy_floor_price, buy_eth_amount) as gain -- 🔥 def of gain
         from cet
         where rnk = 1
         ;
@@ -746,7 +746,7 @@ def update_past_90_days_trading_roi():
                 , roi.contract
                 , min(buy_date) as buy_date
                 , sum(buy_eth_amount) as buy_eth_amount
-                , coalesce(sum(gain), 0) as gain -- 🤷 treat null gain as 0.. this is debatable
+                , sum(gain) as gain
             from trade_roi_flat roi
             left join address_metadata m
                 on roi.address = m.id
