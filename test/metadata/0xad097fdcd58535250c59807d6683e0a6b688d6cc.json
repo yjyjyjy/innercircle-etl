@@ -1,0 +1,32 @@
+{
+  "address": "0xad097fdcd58535250c59807d6683e0a6b688d6cc",
+  "imageUrl": "https://lh3.googleusercontent.com/43zaWcLPGvVqc1PHbd_Bttcp_9-_CEnIJBQ-vCUK4WHnTtdMKvdGKhrvwQv9uzU7aidyIfG6NLgH409U9qgm-gewi6_hYf3d-CN-ZVo=s100",
+  "user": {
+    "username": "tulipvault2",
+    "publicUsername": "tulipvault2",
+    "id": "VXNlclR5cGU6MTkxMjcyMg==",
+    "favoriteAssetCount": 19
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxOTcwNjcx",
+    "twitterUsername": "evankeast",
+    "instagramUsername": "evankeast",
+    "websiteUrl": "https://doodles.app"
+  },
+  "bio": "https://doodles.app",
+  "bannerImageUrl": null,
+  "config": "VERIFIED",
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6NjkxMDg5MjE=",
+  "names": [
+    {
+      "name": "a24.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "tulipvault2",
+  "createdDate": "2021-08-26T05:44:54.225948",
+  "privateAssetCount": 79,
+  "id": "QWNjb3VudFR5cGU6NjkxMDg5MjE="
+}

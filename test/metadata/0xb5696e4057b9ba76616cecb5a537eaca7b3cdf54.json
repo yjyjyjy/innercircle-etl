@@ -1,0 +1,32 @@
+{
+  "address": "0xb5696e4057b9ba76616cecb5a537eaca7b3cdf54",
+  "imageUrl": "https://lh3.googleusercontent.com/JTTgAyCIG2MvbMgTj6CQAyPmcXmk8ivv6PXNlSFyB3jrHsVOYddpCvoZl0wIohOi4cB0nhaYbYrSzaGEpOr7spiQ5t3C_HPvvcq1=s100",
+  "user": {
+    "username": "JFellzz",
+    "publicUsername": "JFellzz",
+    "id": "VXNlclR5cGU6MjcyNzQ4",
+    "favoriteAssetCount": 1
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxNTM4NjQ=",
+    "twitterUsername": "@jfellzz",
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": "feel felt found.",
+  "bannerImageUrl": "https://lh3.googleusercontent.com/SpgpIqCT1MfmHcW-4VKWSwrrCv_0qBQTy3eg0sfaixPFUKPA_24AaOkk_f9gFKrCJZpe9x0f3QNqV5PWPM00F9Gsmrh3HQiOv501DQ=s2500",
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTA4Nzc3MTM=",
+  "names": [
+    {
+      "name": "jfellz.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "JFellzz",
+  "createdDate": "2020-09-02T16:55:12.498706",
+  "privateAssetCount": 273,
+  "id": "QWNjb3VudFR5cGU6MTA4Nzc3MTM="
+}

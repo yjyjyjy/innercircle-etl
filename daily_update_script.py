@@ -27,7 +27,7 @@ date_gaps = utl.check_table_for_date_gaps(
 for date in date_gaps:
     up.update_nft_trade_opensea(date, use_upsert=False)
 
-up.update_address_metadata() # add currency to address metadata
+up.update_address_metadata_trading_currency() # add currency to address metadata
 
 # token transfers
 # TODO don't hardcode this

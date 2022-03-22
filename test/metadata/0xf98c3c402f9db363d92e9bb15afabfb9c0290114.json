@@ -1,0 +1,32 @@
+{
+  "address": "0xf98c3c402f9db363d92e9bb15afabfb9c0290114",
+  "imageUrl": "https://lh3.googleusercontent.com/6ubv7lVEyWw7EyIrXzg6HKPrL486UAdEEWiZTprcDT_71lB7T03DRkPNtpBXyt4g2HxURQT5nXJfH512GeaK5nkZz2HaI9e450HKfsQ=s100",
+  "user": {
+    "username": "crypt0jack_deepfreeze",
+    "publicUsername": "crypt0jack_deepfreeze",
+    "id": "VXNlclR5cGU6NjA5OTkz",
+    "favoriteAssetCount": 66
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZTo1MzE4Mjc=",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": null,
+  "bannerImageUrl": "https://lh3.googleusercontent.com/apUBKc9f_2RZ2lvcQkRXZjoKbAE-1l3jE_w9ExA3tVjtLh0AZRxhcSBqwbUfe8EzN0xJJQeA-o6ughambyoNniZu9-T2Q6ldqPvwlq0=s2500",
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MzA3MDg5Mjc=",
+  "names": [
+    {
+      "name": "crypt0jack.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "crypt0jack_deepfreeze",
+  "createdDate": "2021-04-11T12:22:39.484212",
+  "privateAssetCount": 134,
+  "id": "QWNjb3VudFR5cGU6MzA3MDg5Mjc="
+}

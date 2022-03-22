@@ -1,0 +1,32 @@
+{
+  "address": "0x052564eb0fd8b340803df55def89c25c432f43f4",
+  "imageUrl": "https://lh3.googleusercontent.com/idL1s3jJnOdywU124X9BA-VnKQTWuzQ_Prl5MpnBmoejgdryDomMaQvv_7ORggeqkxUr1RDGdzXG7RF2FvIaWtUZrrYVYMnL_PlUOQ=s100",
+  "user": {
+    "username": "PabloPunkasso",
+    "publicUsername": "PabloPunkasso",
+    "id": "VXNlclR5cGU6NjU4MzQ=",
+    "favoriteAssetCount": 0
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxNDMyNg==",
+    "twitterUsername": "pablopunkasso",
+    "instagramUsername": "",
+    "websiteUrl": ""
+  },
+  "bio": "",
+  "bannerImageUrl": "https://lh3.googleusercontent.com/JIiYrRtM6iaLgW8q6QsJR7N5pLtr85Uy07rIcrjZnu45GDV_mLuZ0hOb8ogGrGzwfdUvQgoPK5XxP4ev-MjdEXy9dFQHByBIQmu-=s2500",
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6OTQ1NDE=",
+  "names": [
+    {
+      "name": "pablopunkasso.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "PabloPunkasso",
+  "createdDate": "2018-06-12T07:11:13.196324",
+  "privateAssetCount": 764,
+  "id": "QWNjb3VudFR5cGU6OTQ1NDE="
+}

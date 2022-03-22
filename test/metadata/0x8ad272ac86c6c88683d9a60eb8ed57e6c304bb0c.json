@@ -1,0 +1,32 @@
+{
+  "address": "0x8ad272ac86c6c88683d9a60eb8ed57e6c304bb0c",
+  "imageUrl": "https://lh3.googleusercontent.com/akUUGXSff5OkNjjP_jqNbHz3ElrxudYdlufBQR38G1IbTGTYM5vEk7i2YWomFGqZhAUnG2su79j3yRB3f7LhXuuPxGh1NhSiTFJM=s100",
+  "user": {
+    "username": "j1mmy_vault",
+    "publicUsername": "j1mmy_vault",
+    "id": "VXNlclR5cGU6ODA4MzU=",
+    "favoriteAssetCount": 1
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZTo1MDUwMw==",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": null,
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTI1NzE0NDI=",
+  "names": [
+    {
+      "name": "vault.j1mmy.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "j1mmy_vault",
+  "createdDate": "2020-10-14T22:14:28.268944",
+  "privateAssetCount": 767,
+  "id": "QWNjb3VudFR5cGU6MTI1NzE0NDI="
+}

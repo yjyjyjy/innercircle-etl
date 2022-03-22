@@ -1,0 +1,32 @@
+{
+  "address": "0xcc739b45da0123047cd0103b88f968b22ebdfc66",
+  "imageUrl": "https://lh3.googleusercontent.com/1GYuoH0lVA_WSHSgL1NB328vEPKiPqjoej95-Oyf2HxHpCc_CvWdfXhMkF9qkm6jaE4eS3P23esBUbZltODKXvf8k5IGjp96P6b0uQ=s100",
+  "user": {
+    "username": "danielcota",
+    "publicUsername": "danielcota",
+    "id": "VXNlclR5cGU6MTU4NzQyNTA=",
+    "favoriteAssetCount": 0
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxNzE3MjQwMA==",
+    "twitterUsername": "danielcota",
+    "instagramUsername": "",
+    "websiteUrl": ""
+  },
+  "bio": "https://200keys.com",
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTcyOTc2Mzcy",
+  "names": [
+    {
+      "name": "danielcota.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "danielcota",
+  "createdDate": "2021-12-14T09:18:20.696844",
+  "privateAssetCount": 15,
+  "id": "QWNjb3VudFR5cGU6MTcyOTc2Mzcy"
+}

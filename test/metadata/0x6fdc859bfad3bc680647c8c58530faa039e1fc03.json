@@ -1,0 +1,32 @@
+{
+  "address": "0x6fdc859bfad3bc680647c8c58530faa039e1fc03",
+  "imageUrl": "https://storage.googleapis.com/opensea-static/opensea-profile/8.png",
+  "user": {
+    "username": "EasyE1111",
+    "publicUsername": "EasyE1111",
+    "id": "VXNlclR5cGU6MTQwMzAxMQ==",
+    "favoriteAssetCount": 1
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxMzkyOTgx",
+    "twitterUsername": "@e23742407",
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": "",
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6NjE1NDI5Njc=",
+  "names": [
+    {
+      "name": "easye1111.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "EasyE1111",
+  "createdDate": "2021-08-13T04:50:16.076773",
+  "privateAssetCount": 320,
+  "id": "QWNjb3VudFR5cGU6NjE1NDI5Njc="
+}

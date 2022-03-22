@@ -1,0 +1,27 @@
+{
+  "address": "0x3811866a85b0e42b437b36bb4fd2f05e4c3b16f8",
+  "imageUrl": "https://storage.googleapis.com/opensea-static/opensea-profile/22.png",
+  "user": {
+    "username": "__OS__ExpertRuddySalamander",
+    "publicUsername": null,
+    "id": "VXNlclR5cGU6MTIxMzQ2NzE=",
+    "favoriteAssetCount": 1
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxMzE5NDUzNw==",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": null,
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTAzNDYxOTMz",
+  "names": [],
+  "displayName": null,
+  "createdDate": "2021-10-26T06:13:23.856539",
+  "privateAssetCount": 56,
+  "id": "QWNjb3VudFR5cGU6MTAzNDYxOTMz"
+}

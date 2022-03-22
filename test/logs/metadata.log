@@ -1,0 +1,1285 @@
+[2022-03-08 19:45:07,226 |   INFO   | metadata] Starting
+[2022-03-08 19:45:07,226 |   INFO   | metadata] Loaded 2 usernames
+[2022-03-08 19:45:07,227 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 19:45:07,318 |  ERROR   | metadata] Error getting metadata for martinmarko
+cloudscraper.exceptions.CloudflareChallengeError: Detected a Cloudflare version 2 challenge, This feature is not available in the opensource (free) version.
+[2022-03-08 19:45:12,655 | CRITICAL | metadata] Fatal error
+cloudscraper.exceptions.CloudflareChallengeError: Detected a Cloudflare version 2 challenge, This feature is not available in the opensource (free) version.
+
+During handling of the above exception, another exception occurred:
+
+KeyboardInterrupt
+[2022-03-08 19:45:36,380 |   INFO   | metadata] Starting
+[2022-03-08 19:45:36,380 |   INFO   | metadata] Loaded 2 usernames
+[2022-03-08 19:45:36,380 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 19:45:36,472 |  ERROR   | metadata] Error: 503
+[2022-03-08 19:45:38,553 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 52, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 19:45:48,627 |  ERROR   | metadata] Error: 503
+[2022-03-08 19:45:58,300 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 52, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 19:45:59,623 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 52, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 91, in <module>
+    main()
+  File "metadata.py", line 83, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 56, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:18:23,557 |   INFO   | metadata] Starting
+[2022-03-08 20:18:23,557 |   INFO   | metadata] Loaded 2 usernames
+[2022-03-08 20:18:23,557 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:18:34,967 |  ERROR   | metadata] Error parsing metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 67, in get_metadata
+    account = json_data["props"]["relayCache"][0][1]["json"]["data"]["account"]
+KeyError: 'account'
+[2022-03-08 20:18:34,968 |   INFO   | metadata] Getting metadata for 
+[2022-03-08 20:18:41,221 |  ERROR   | metadata] Error parsing metadata for 
+Traceback (most recent call last):
+  File "metadata.py", line 67, in get_metadata
+    account = json_data["props"]["relayCache"][0][1]["json"]["data"]["account"]
+KeyError: 'account'
+[2022-03-08 20:18:41,221 |   INFO   | metadata] Finished
+[2022-03-08 20:20:29,596 |   INFO   | metadata] Starting
+[2022-03-08 20:20:29,597 |   INFO   | metadata] Loaded 2 usernames
+[2022-03-08 20:20:29,597 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:20:44,733 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 905, in _tunnel
+    raise OSError("Tunnel connection failed: %d %s" % (code,
+OSError: Tunnel connection failed: 502 Bad Gateway
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+[2022-03-08 20:20:51,935 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 905, in _tunnel
+    raise OSError("Tunnel connection failed: %d %s" % (code,
+OSError: Tunnel connection failed: 502 Bad Gateway
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:20:54,056 |   INFO   | metadata] Starting
+[2022-03-08 20:20:54,056 |   INFO   | metadata] Loaded 2 usernames
+[2022-03-08 20:20:54,056 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:21:12,097 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+[2022-03-08 20:21:12,241 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:21:20,223 |   INFO   | metadata] Starting
+[2022-03-08 20:21:20,223 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:21:20,224 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:21:47,300 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 285, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+[2022-03-08 20:21:50,475 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 285, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:21:52,147 |   INFO   | metadata] Starting
+[2022-03-08 20:21:52,147 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:21:52,148 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:22:44,494 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 285, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+[2022-03-08 20:22:49,883 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 285, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by ProxyError('Cannot connect to proxy.', RemoteDisconnected('Remote end closed connection without response')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:23:56,533 |   INFO   | metadata] Starting
+[2022-03-08 20:23:56,534 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:23:56,534 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:24:21,741 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 905, in _tunnel
+    raise OSError("Tunnel connection failed: %d %s" % (code,
+OSError: Tunnel connection failed: 502 Bad Gateway
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+[2022-03-08 20:24:22,808 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 905, in _tunnel
+    raise OSError("Tunnel connection failed: %d %s" % (code,
+OSError: Tunnel connection failed: 502 Bad Gateway
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:24:23,993 |   INFO   | metadata] Starting
+[2022-03-08 20:24:23,993 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:24:23,993 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:24:49,179 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 905, in _tunnel
+    raise OSError("Tunnel connection failed: %d %s" % (code,
+OSError: Tunnel connection failed: 502 Bad Gateway
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 510, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarkomartinmarko (Caused by ProxyError('Cannot connect to proxy.', OSError('Tunnel connection failed: 502 Bad Gateway')))
+[2022-03-08 20:25:03,691 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+[2022-03-08 20:25:03,862 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 50, in get_metadata
+    response = scraper.get(url + username, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 546, in get
+    return self.request('GET', url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 263, in request
+    self.perform_request(method, url, *args, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/cloudscraper/__init__.py", line 182, in perform_request
+    return super(CloudScraper, self).request(method, url, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 97, in <module>
+    main()
+  File "metadata.py", line 89, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 62, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:25:29,337 |   INFO   | metadata] Starting
+[2022-03-08 20:25:29,338 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:25:29,338 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:25:33,707 |   INFO   | metadata] 200
+[2022-03-08 20:25:33,740 |   INFO   | metadata] Finished
+[2022-03-08 20:25:48,420 |   INFO   | metadata] Starting
+[2022-03-08 20:25:48,420 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:25:48,420 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:25:54,481 |   INFO   | metadata] 200
+[2022-03-08 20:25:54,515 |   INFO   | metadata] Finished
+[2022-03-08 20:29:54,563 |   INFO   | metadata] Starting
+[2022-03-08 20:29:54,563 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:29:54,563 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:29:55,767 |   INFO   | metadata] Starting
+[2022-03-08 20:29:55,767 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:29:55,767 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:29:55,834 |   INFO   | metadata] 200
+[2022-03-08 20:29:55,874 |   INFO   | metadata] Finished
+[2022-03-08 20:29:56,414 |   INFO   | metadata] 200
+[2022-03-08 20:29:56,446 |   INFO   | metadata] Finished
+[2022-03-08 20:30:03,917 |   INFO   | metadata] Starting
+[2022-03-08 20:30:03,917 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:30:03,917 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:30:04,996 |   INFO   | metadata] 200
+[2022-03-08 20:30:05,028 |   INFO   | metadata] Finished
+[2022-03-08 20:30:07,892 |   INFO   | metadata] Starting
+[2022-03-08 20:30:07,893 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:30:07,893 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:30:08,189 |   INFO   | metadata] Starting
+[2022-03-08 20:30:08,189 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:30:08,189 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:30:09,099 |   INFO   | metadata] 200
+[2022-03-08 20:30:09,130 |   INFO   | metadata] Finished
+[2022-03-08 20:30:09,396 |   INFO   | metadata] 200
+[2022-03-08 20:30:09,427 |   INFO   | metadata] Finished
+[2022-03-08 20:30:13,724 |   INFO   | metadata] Starting
+[2022-03-08 20:30:13,725 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:30:13,725 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:30:13,916 |   INFO   | metadata] Starting
+[2022-03-08 20:30:13,916 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:30:13,916 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:30:14,475 |   INFO   | metadata] 200
+[2022-03-08 20:30:14,507 |   INFO   | metadata] Finished
+[2022-03-08 20:30:14,711 |   INFO   | metadata] 200
+[2022-03-08 20:30:14,743 |   INFO   | metadata] Finished
+[2022-03-08 20:34:08,699 |   INFO   | metadata] Starting
+[2022-03-08 20:34:08,699 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:34:08,699 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:34:10,870 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+[2022-03-08 20:34:11,035 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 95, in <module>
+    main()
+  File "metadata.py", line 87, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 60, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:34:12,283 |   INFO   | metadata] Starting
+[2022-03-08 20:34:12,283 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:34:12,283 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:34:47,449 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 313, in recv_into
+    return self.connection.recv_into(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1821, in recv_into
+    result = _lib.SSL_read(self._ssl, buf, nbytes)
+KeyboardInterrupt
+[2022-03-08 20:34:47,607 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 313, in recv_into
+    return self.connection.recv_into(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1821, in recv_into
+    result = _lib.SSL_read(self._ssl, buf, nbytes)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 95, in <module>
+    main()
+  File "metadata.py", line 87, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 60, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:35:08,193 |   INFO   | metadata] Starting
+[2022-03-08 20:35:08,194 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:35:08,194 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:35:22,424 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 485, in wrap_socket
+    cnx.do_handshake()
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1915, in do_handshake
+    self._raise_ssl_error(self._ssl, result)
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1640, in _raise_ssl_error
+    raise SysCallError(-1, "Unexpected EOF")
+OpenSSL.SSL.SysCallError: (-1, 'Unexpected EOF')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 366, in connect
+    self.sock = ssl_wrap_socket(
+  File "/usr/lib/python3/dist-packages/urllib3/util/ssl_.py", line 370, in ssl_wrap_socket
+    return context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 491, in wrap_socket
+    raise ssl.SSLError("bad handshake: %r" % e)
+ssl.SSLError: ("bad handshake: SysCallError(-1, 'Unexpected EOF')",)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 436, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by SSLError(SSLError("bad handshake: SysCallError(-1, 'Unexpected EOF')")))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 514, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='opensea.io', port=443): Max retries exceeded with url: /martinmarko (Caused by SSLError(SSLError("bad handshake: SysCallError(-1, 'Unexpected EOF')")))
+[2022-03-08 20:35:35,632 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+[2022-03-08 20:35:39,232 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 662, in urlopen
+    self._prepare_proxy(conn)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 950, in _prepare_proxy
+    conn.connect()
+  File "/usr/lib/python3/dist-packages/urllib3/connection.py", line 322, in connect
+    self._tunnel()
+  File "/usr/lib/python3.8/http/client.py", line 901, in _tunnel
+    (version, code, message) = response._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 96, in <module>
+    main()
+  File "metadata.py", line 88, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 61, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:35:55,073 |   INFO   | metadata] Starting
+[2022-03-08 20:35:55,073 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:35:55,073 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:36:13,164 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 326, in recv_into
+    raise timeout("The read operation timed out")
+socket.timeout: The read operation timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 400, in increment
+    raise six.reraise(type(error), error, _stacktrace)
+  File "/usr/lib/python3/dist-packages/six.py", line 703, in reraise
+    raise value
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 423, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 330, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='opensea.io', port=443): Read timed out. (read timeout=10)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 529, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='opensea.io', port=443): Read timed out. (read timeout=10)
+[2022-03-08 20:36:22,657 | CRITICAL | metadata] Fatal error
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 326, in recv_into
+    raise timeout("The read operation timed out")
+socket.timeout: The read operation timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 719, in urlopen
+    retries = retries.increment(
+  File "/usr/lib/python3/dist-packages/urllib3/util/retry.py", line 400, in increment
+    raise six.reraise(type(error), error, _stacktrace)
+  File "/usr/lib/python3/dist-packages/six.py", line 703, in reraise
+    raise value
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 423, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 330, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='opensea.io', port=443): Read timed out. (read timeout=10)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 46, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 529, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='opensea.io', port=443): Read timed out. (read timeout=10)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "metadata.py", line 96, in <module>
+    main()
+  File "metadata.py", line 88, in main
+    metadata = get_metadata(username)
+  File "metadata.py", line 61, in get_metadata
+    sleep(10)
+KeyboardInterrupt
+[2022-03-08 20:37:04,241 |   INFO   | metadata] Starting
+[2022-03-08 20:37:04,242 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:04,242 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:06,598 |   INFO   | metadata] Finished
+[2022-03-08 20:37:08,661 |   INFO   | metadata] Starting
+[2022-03-08 20:37:08,661 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:08,662 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:10,987 |   INFO   | metadata] Finished
+[2022-03-08 20:37:12,002 |   INFO   | metadata] Starting
+[2022-03-08 20:37:12,003 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:12,003 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:14,095 |   INFO   | metadata] Finished
+[2022-03-08 20:37:15,128 |   INFO   | metadata] Starting
+[2022-03-08 20:37:15,128 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:15,128 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:16,480 |   INFO   | metadata] Finished
+[2022-03-08 20:37:17,402 |   INFO   | metadata] Starting
+[2022-03-08 20:37:17,402 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:17,402 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:18,585 |   INFO   | metadata] Finished
+[2022-03-08 20:37:19,483 |   INFO   | metadata] Starting
+[2022-03-08 20:37:19,483 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:19,483 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:21,164 |   INFO   | metadata] Finished
+[2022-03-08 20:37:22,087 |   INFO   | metadata] Starting
+[2022-03-08 20:37:22,087 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:22,087 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:24,285 |   INFO   | metadata] Finished
+[2022-03-08 20:37:25,176 |   INFO   | metadata] Starting
+[2022-03-08 20:37:25,176 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:25,177 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:26,482 |   INFO   | metadata] Finished
+[2022-03-08 20:37:27,413 |   INFO   | metadata] Starting
+[2022-03-08 20:37:27,414 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:37:27,414 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:37:29,574 |   INFO   | metadata] Finished
+[2022-03-08 20:38:29,319 |   INFO   | metadata] Starting
+[2022-03-08 20:38:29,319 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:38:29,319 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:38:31,533 |   INFO   | metadata] Finished
+[2022-03-08 20:38:50,733 |   INFO   | metadata] Starting
+[2022-03-08 20:38:50,733 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:38:50,733 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:38:51,997 |   INFO   | metadata] Finished
+[2022-03-08 20:38:54,517 |   INFO   | metadata] Starting
+[2022-03-08 20:38:54,518 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:38:54,518 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:38:55,823 |   INFO   | metadata] Finished
+[2022-03-08 20:39:11,677 |   INFO   | metadata] Starting
+[2022-03-08 20:39:11,678 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:11,678 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:13,854 |   INFO   | metadata] Finished
+[2022-03-08 20:39:15,680 |   INFO   | metadata] Starting
+[2022-03-08 20:39:15,680 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:15,680 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:16,993 |   INFO   | metadata] Finished
+[2022-03-08 20:39:27,494 |   INFO   | metadata] Starting
+[2022-03-08 20:39:27,495 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:27,495 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:28,780 |   INFO   | metadata] Finished
+[2022-03-08 20:39:31,074 |   INFO   | metadata] Starting
+[2022-03-08 20:39:31,074 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:31,074 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:32,163 |   INFO   | metadata] Finished
+[2022-03-08 20:39:34,443 |   INFO   | metadata] Starting
+[2022-03-08 20:39:34,443 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:34,443 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:35,562 |   INFO   | metadata] Finished
+[2022-03-08 20:39:37,848 |   INFO   | metadata] Starting
+[2022-03-08 20:39:37,849 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:37,849 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:39,037 |   INFO   | metadata] Finished
+[2022-03-08 20:39:41,338 |   INFO   | metadata] Starting
+[2022-03-08 20:39:41,339 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:41,339 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:41,868 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 45, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 325, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 146, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 107, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 105, in do_poll
+    return poll_obj.poll(t)
+KeyboardInterrupt
+[2022-03-08 20:39:53,033 |   INFO   | metadata] Finished
+[2022-03-08 20:39:57,874 |   INFO   | metadata] Starting
+[2022-03-08 20:39:57,875 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:39:57,875 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:39:58,517 |   INFO   | metadata] Finished
+[2022-03-08 20:40:03,246 |   INFO   | metadata] Starting
+[2022-03-08 20:40:03,247 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:03,247 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:04,345 |   INFO   | metadata] Finished
+[2022-03-08 20:40:05,626 |   INFO   | metadata] Starting
+[2022-03-08 20:40:05,627 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:05,627 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:06,309 |   INFO   | metadata] Finished
+[2022-03-08 20:40:07,588 |   INFO   | metadata] Starting
+[2022-03-08 20:40:07,588 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:07,588 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:08,173 |   INFO   | metadata] Finished
+[2022-03-08 20:40:09,450 |   INFO   | metadata] Starting
+[2022-03-08 20:40:09,450 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:09,451 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:10,421 |   INFO   | metadata] Finished
+[2022-03-08 20:40:11,719 |   INFO   | metadata] Starting
+[2022-03-08 20:40:11,719 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:11,719 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:12,354 |   INFO   | metadata] Finished
+[2022-03-08 20:40:13,637 |   INFO   | metadata] Starting
+[2022-03-08 20:40:13,638 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:13,638 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:14,258 |   INFO   | metadata] Finished
+[2022-03-08 20:40:15,548 |   INFO   | metadata] Starting
+[2022-03-08 20:40:15,548 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:15,548 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:16,114 |   INFO   | metadata] Finished
+[2022-03-08 20:40:17,405 |   INFO   | metadata] Starting
+[2022-03-08 20:40:17,406 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:40:17,406 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:40:17,742 |  ERROR   | metadata] Error getting metadata for martinmarko
+Traceback (most recent call last):
+  File "metadata.py", line 45, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 325, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 146, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 107, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 105, in do_poll
+    return poll_obj.poll(t)
+KeyboardInterrupt
+[2022-03-08 20:40:28,446 |   INFO   | metadata] Finished
+[2022-03-08 20:44:09,034 |   INFO   | metadata] Starting
+[2022-03-08 20:44:09,035 |   INFO   | metadata] Loaded 1 usernames
+[2022-03-08 20:44:09,035 |   INFO   | metadata] Getting metadata for martinmarko
+[2022-03-08 20:44:19,243 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:44:39,403 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:44:59,566 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:45:19,726 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:45:39,890 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:46:00,053 |  ERROR   | metadata] Proxy error
+[2022-03-08 20:46:11,136 |   INFO   | metadata] Finished

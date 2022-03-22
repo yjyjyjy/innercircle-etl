@@ -332,7 +332,7 @@ def get_contract_meta_data_from_opensea(contract):
         "medium_username",
         "wiki_url",
         "payout_address",
-        "slug",
+        "slug"
     ]
     meta = {"address": contract}
 
@@ -366,6 +366,9 @@ def get_contract_meta_data_from_opensea(contract):
             for key in collection_keys:
                 if key != "name":
                     meta[key] = collection.get(key, None)
+
+            meta['last_updated_at']=datetime.datetime.now()
+
     except Exception as e:
         raise ValueError("🤯 Error: Received data is not json. Could be network timeout", e, "data:", data)
 

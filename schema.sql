@@ -78,7 +78,8 @@ create table collection (
         medium_username varchar,
         wiki_url varchar,
         payout_address varchar,
-        slug varchar -- not sure what this is
+        slug varchar,
+		last_updated_at timestamp
 );
 
 -- create table nft_contract_abi (

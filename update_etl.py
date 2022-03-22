@@ -86,7 +86,8 @@ def update_nft_trade_opensea(date, running_in_cloud=utl.RUNNING_IN_CLOUD, use_up
         key="trx_hash",
     )
 
-def update_address_metadata():
+def update_address_metadata_trading_currency():
+
     utl.query_postgres(sql='''
         insert into address_metadata (id, is_special_address, special_address_type)
         select
@@ -103,6 +104,7 @@ def update_address_metadata():
         where payment_token not in (select id from address_metadata)
         ;
     ''')
+
 
 def update_contracts(date):
     print("🦄🦄 start update_contracts")
@@ -209,7 +211,8 @@ def update_collection(pagination=5):
         "medium_username",
         "wiki_url",
         "payout_address",
-        "slug"
+        "slug",
+        "last_updated_at"
     """
 
     wait_time = 1.5
@@ -1145,3 +1148,49 @@ def update_post():
     ;
     """
     utl.query_postgres(sql=sql)
+
+def update_address_metadata_is_contract():
+
+    utl.query_postgres(sql='''
+        update address_metadata u
+        set is_contract = true
+        from eth_contracts c
+        where c.address = u.id
+        ;
+        update address_metadata
+        set is_contract = false
+        where is_contract is null
+        ;
+    ''')
+
+def update_address_metadata_trader_profile():
+
+    utl.query_postgres(sql='''
+        insert into address_metadata (id)
+        select s.id
+        from insider s
+        left join address_metadata t
+            on t.id = s.id
+        where t.id is null
+        ;
+    ''')
+
+    update_address_metadata_is_contract()
+
+    df = utl.query_postgres(sql='''
+        select
+            m.id
+        from address_metadata m
+        join insight i
+            on m.id = i.insider_id
+        where i.feed_importance_score > 0
+            and (
+                m.last_updated_at is null
+                or m.last_updated_at < now() - interval '7 days'
+                )
+        group by 1
+        ;
+        ''', columns=['id'])
+
+    id_list = list(df['id'])
+

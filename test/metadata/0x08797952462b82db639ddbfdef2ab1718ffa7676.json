@@ -1,0 +1,27 @@
+{
+  "address": "0x08797952462b82db639ddbfdef2ab1718ffa7676",
+  "imageUrl": "https://storage.googleapis.com/opensea-static/opensea-profile/2.png",
+  "user": {
+    "username": "freak",
+    "publicUsername": "freak",
+    "id": "VXNlclR5cGU6MzY5Mw==",
+    "favoriteAssetCount": 26
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToyNDU0NQ==",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": null,
+  "bannerImageUrl": null,
+  "config": "AFFILIATE",
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6NDQz",
+  "names": [],
+  "displayName": "freak",
+  "createdDate": "2018-01-23T04:51:15.666883",
+  "privateAssetCount": 120,
+  "id": "QWNjb3VudFR5cGU6NDQz"
+}

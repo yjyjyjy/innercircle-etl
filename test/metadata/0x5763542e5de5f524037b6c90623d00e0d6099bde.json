@@ -1,0 +1,32 @@
+{
+  "address": "0x5763542e5de5f524037b6c90623d00e0d6099bde",
+  "imageUrl": "https://storage.googleapis.com/opensea-static/opensea-profile/7.png",
+  "user": {
+    "username": "metaverseinvestor",
+    "publicUsername": "metaverseinvestor",
+    "id": "VXNlclR5cGU6NzA2MQ==",
+    "favoriteAssetCount": 0
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToxNTA5NDc=",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": "",
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTgyMTM3",
+  "names": [
+    {
+      "name": "metaverseinvestor.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "metaverseinvestor",
+  "createdDate": "2018-11-29T16:58:19.076207",
+  "privateAssetCount": 263,
+  "id": "QWNjb3VudFR5cGU6MTgyMTM3"
+}

@@ -1,0 +1,32 @@
+{
+  "address": "0x695589d2bc5a63db1e830b1da7a07de73e58c6a8",
+  "imageUrl": "https://lh3.googleusercontent.com/zDcSxQFtQ0myl1QRXXyB01FMzCdq12ehZa-YcLZUT4fRIEoM6uPHLWT7kBgGh-fQystTAsW8opYqa6EzVnjbXlsaXlYcp7hDt9mRArE=s100",
+  "user": {
+    "username": "ultrxparadise",
+    "publicUsername": "ultrxparadise",
+    "id": "VXNlclR5cGU6MTkwMjU0ODQ=",
+    "favoriteAssetCount": 0
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZToyMDg5NTAwOQ==",
+    "twitterUsername": "ultrapara",
+    "instagramUsername": null,
+    "websiteUrl": ""
+  },
+  "bio": null,
+  "bannerImageUrl": null,
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MTkyNzEzOTAw",
+  "names": [
+    {
+      "name": "ultrxparadise.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "ultrxparadise",
+  "createdDate": "2022-01-06T12:50:34.996363",
+  "privateAssetCount": 24,
+  "id": "QWNjb3VudFR5cGU6MTkyNzEzOTAw"
+}

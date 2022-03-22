@@ -1,0 +1,32 @@
+{
+  "address": "0x4897d38b0974051d8fa34364e37a5993f4a966a5",
+  "imageUrl": "https://lh3.googleusercontent.com/xXAV48gzO3PQXbYKzx3oGH14iovjDud9ihn73pJ0RYIGPXFCaeJkR1icftEplUtql2aF-UifKC-mc9zRbv5W_20li_SgeMx1JqFhHjM=s100",
+  "user": {
+    "username": "h4x",
+    "publicUsername": "h4x",
+    "id": "VXNlclR5cGU6MjY0NDE1",
+    "favoriteAssetCount": 22
+  },
+  "metadata": {
+    "isBanned": false,
+    "id": "QWNjb3VudE1ldGFkYXRhVHlwZTo3NjgyMw==",
+    "twitterUsername": null,
+    "instagramUsername": null,
+    "websiteUrl": null
+  },
+  "bio": "my ownership of something is not an endorsement of it",
+  "bannerImageUrl": "https://lh3.googleusercontent.com/P4otgDEc4hGI1I6G_ipTAk_1bhzb4yyYzSa5w0KlNMLLlDFT5vIP6Yzyxg6MalPoxdrnQ8OIqW5E7c7A7uUCtc4Fm0cCs3LumTuENQc=s2500",
+  "config": null,
+  "isCompromised": false,
+  "relayId": "QWNjb3VudFR5cGU6MjAyODc0NjM=",
+  "names": [
+    {
+      "name": "h4x.eth",
+      "type": "ens"
+    }
+  ],
+  "displayName": "h4x",
+  "createdDate": "2021-02-13T16:00:47.247601",
+  "privateAssetCount": 844,
+  "id": "QWNjb3VudFR5cGU6MjAyODc0NjM="
+}
