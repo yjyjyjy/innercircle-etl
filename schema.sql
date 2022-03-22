@@ -215,10 +215,9 @@ create table address_metadata (
 	, is_contract BOOLEAN
 	, is_special_address boolean
 	, special_address_type varchar
-	, opensea_user_created_at timestamp
 	, opensea_display_name varchar
-	, opensea_banner_image_url varchar
 	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
 	, opensea_bio varchar
 	, ens varchar
 	, twitter_username varchar
@@ -226,12 +225,29 @@ create table address_metadata (
 	, medium_username varchar
 	, email varchar
 	, website varchar
+	, opensea_user_created_at timestamp
 	, last_updated_at timestamp
 )
 ;
 create index address_metadata_idx_email on address_metadata (email);
 create index address_metadata_idx_is_contract on address_metadata (is_contract);
 create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
+
+-- the opensea loading table for the address_metadata
+create table address_metadata_opensea (
+	id varchar primary key
+	, opensea_display_name varchar
+	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
+	, opensea_bio varchar
+	, twitter_username varchar
+	, instagram_username varchar
+	, website varchar
+	, opensea_user_created_at timestamp
+	, last_updated_at timestamp
+)
+;
+
 
 create table insider_portfolio (
 	insider_id varchar not null

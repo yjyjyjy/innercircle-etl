@@ -105,6 +105,8 @@ def upsert_from_file_to_postgres(csv_filename_with_path, table, key):
 def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=False, key=None):
     print("""🌿 Load a python df into postgres""")
     temp_file_will_be_removed = False
+
+    # create a temp csv file name
     if csv_filename_with_path == None:
         now_str = str(datetime.datetime.now()).replace(" ", "_").replace(":", "_").replace(".", "_")
         csv_filename_with_path = ABSOLUTE_PATH + f"tmp_dataframe_{now_str}.csv"
