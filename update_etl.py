@@ -1189,7 +1189,7 @@ def update_address_metadata_trader_profile():
         from address_metadata m
         join insight i
             on m.id = i.insider_id
-        where i.feed_importance_score > 0
+        where 1=1 -- i.feed_importance_score > 0
             and (
                 m.last_updated_at is null
                 or m.last_updated_at < now() - interval '7 days'
@@ -1242,6 +1242,32 @@ def update_address_metadata_trader_profile():
         from address_metadata_opensea s
         where s.id = t.id
         ;
+    ''')
+
+    # move data into insider_id which is a production table serving Next.js
+    utl.query_postgres(sql='''
+    truncate table insider_metadata;
+    insert into insider_metadata
+    select
+        id as insider_id
+        , public_name_tag
+        , opensea_display_name
+        , opensea_image_url
+        , opensea_banner_image_url
+        , opensea_bio
+        , ens
+        , twitter_username
+        , instagram_username
+        , medium_username
+        , email
+        , website
+        , opensea_user_created_at
+        , last_updated_at
+    from address_metadata
+    where id in (
+        select id
+        from insider
+    );
     ''')
 
 def parse_metadata_json(data):

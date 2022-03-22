@@ -248,6 +248,24 @@ create table address_metadata_opensea (
 )
 ;
 
+create table insider_metadata (
+	insider_id varchar primary key
+	, public_name_tag varchar
+	, opensea_display_name varchar
+	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
+	, opensea_bio varchar
+	, ens varchar
+	, twitter_username varchar
+	, instagram_username varchar
+	, medium_username varchar
+	, email varchar
+	, website varchar
+	, opensea_user_created_at timestamp
+	, last_updated_at timestamp
+	, foreign key (insider_id)  references insider(id)
+)
+;
 
 create table insider_portfolio (
 	insider_id varchar not null
