@@ -5,7 +5,7 @@ from const import OPENSEA_TRADING_CONTRACT_V1, OPENSEA_TRADING_CONTRACT_V2
 import time
 import os
 OPENSEA_ABI_FILE_NAME = os.environ.get("OPENSEA_ABI_FILE_NAME")
-
+from address_metadata.address_metadata_worker import ADDRESS_META_TODO_FILE
 
 def update_eth_transactions(date):
     # ******* dump raw transaction data into postgres sql *******
@@ -1192,5 +1192,6 @@ def update_address_metadata_trader_profile():
         ;
         ''', columns=['id'])
 
-    id_list = list(df['id'])
+    df.to_csv(f'address_metadata/{ADDRESS_META_TODO_FILE}', index=False, header=False)
+
 

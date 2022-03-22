@@ -226,6 +226,7 @@ create table address_metadata (
 	, medium_username varchar
 	, email varchar
 	, website varchar
+	, last_updated_at timestamp
 )
 ;
 create index address_metadata_idx_email on address_metadata (email);

@@ -7,6 +7,10 @@ import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from time import sleep, gmtime
+import os
+
+ADDRESS_META_TODO_FILE = 'addresses_todo.csv'
+ADDRESS_META_FINISHED_FILE = 'addresses_finished.csv'
 
 # Local logging
 NAME = os.path.splitext(os.path.basename(__file__))[0]
@@ -26,9 +30,22 @@ logger.addHandler(stream_handler)
 
 
 def load_usernames():
-    with open("usernames.txt", "r") as f:
-        usernames = f.read().splitlines()
+
+    if not os.path.isfile(ADDRESS_META_TODO_FILE):
+        return []
+    f = open(ADDRESS_META_TODO_FILE)
+    usernames = []
+    for line in f:
+        usernames.append(line.rstrip())
     return usernames
+    # with open(ADDRESS_META_TODO_FILE, "r") as f:
+    #     usernames = f.read().splitlines()
+    # return usernames
+
+def rename_todo_file():
+    if os.path.isfile(ADDRESS_META_TODO_FILE):
+        os.rename(ADDRESS_META_TODO_FILE, ADDRESS_META_FINISHED_FILE)
+
 
 
 def get_metadata(username):
@@ -40,7 +57,9 @@ def get_metadata(username):
         "https": "https://192.187.126.98:19016",
     }
 
-    while True:
+    retry = 10
+
+    while retry > 0:
         try:
             response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
 
@@ -49,22 +68,21 @@ def get_metadata(username):
 
             else:
                 logger.error(f"Error: {response.status_code}")
-                sleep(10)
 
         except ReadTimeout:
             logger.error("Timeout")
-            sleep(10)
 
         except SSLError:
             logger.error("SSL Error")
-            sleep(10)
 
         except ProxyError:
             logger.error("Proxy error")
-            sleep(10)
 
         except:
             logger.error(f"Error getting metadata for {username}", exc_info=True)
+
+        finally:
+            retry -= 1
             sleep(10)
 
     soup = BeautifulSoup(response.text, "html.parser")
@@ -90,10 +108,13 @@ def main():
     usernames = load_usernames()
     logger.info(f"Loaded {len(usernames)} usernames")
 
+
     for username in usernames:
         logger.info(f"Getting metadata for {username}")
         metadata = get_metadata(username)
         save_metadata(username, metadata)
+
+    rename_todo_file()
 
     logger.info("Finished")
 

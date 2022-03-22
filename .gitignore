@@ -9,3 +9,5 @@ node_modules/
 
 crontab
 log.txt
+address_metadata/metadata/
+address_metadata/logs/
