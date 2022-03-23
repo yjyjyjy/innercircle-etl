@@ -1244,30 +1244,24 @@ def update_address_metadata_trader_profile():
         ;
     ''')
 
-    # move data into insider_id which is a production table serving Next.js
+    # move data into insider table which is a production table serving Next.js
     utl.query_postgres(sql='''
-    truncate table insider_metadata;
-    insert into insider_metadata
-    select
-        id as insider_id
-        , public_name_tag
-        , opensea_display_name
-        , opensea_image_url
-        , opensea_banner_image_url
-        , opensea_bio
-        , ens
-        , twitter_username
-        , instagram_username
-        , medium_username
-        , email
-        , website
-        , opensea_user_created_at
-        , last_updated_at
-    from address_metadata
-    where id in (
-        select id
-        from insider
-    );
+        update insider t
+        set
+            id = s.id
+            , public_name_tag = s.public_name_tag
+            , opensea_display_name = s.opensea_display_name
+            , opensea_image_url = s.opensea_image_url
+            , opensea_banner_image_url = s.opensea_banner_image_url
+            , opensea_bio = s.opensea_bio
+            , twitter_username = s.twitter_username
+            , instagram_username = s.instagram_username
+            , website = s.website
+            , opensea_user_created_at= s.opensea_user_created_at
+            , last_updated_at= s.last_updated_at
+        from address_metadata s
+        where s.id = t.id
+        ;
     ''')
 
 def parse_metadata_json(data):
