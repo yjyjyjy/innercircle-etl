@@ -7,8 +7,8 @@ import csv
 # Create the connection string
 cnn = snowflake.connector.connect(
    user='DEXPLORER',
-   password='Dhruv@1997', # IF YOU WANT TO PASS THIS ARGUMENT YOU CAN DO IT.
-   account='ouhduii-zs68033')
+   password='**********', # IF YOU WANT TO PASS THIS ARGUMENT YOU CAN DO IT.
+   account='*******')
 
 cs = cnn.cursor()
 def creating_snowflake_fileformat():
