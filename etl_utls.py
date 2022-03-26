@@ -93,16 +93,18 @@ def copy_from_file_to_postgres(csv_filename_with_path, table):
     query_postgres(sql)
 
 
-def upsert_from_file_to_postgres(csv_filename_with_path, table, key):
+def upsert_from_file_to_postgres(csv_filename_with_path, table, key, update=False):
     print(f"🌿 Upsert into {csv_filename_with_path} into {table} at: " + str(datetime.datetime.now()))
     staging_table = create_staging_table(table)
     copy_from_file_to_postgres(csv_filename_with_path, table=staging_table)
-    upsert_postgres(source=staging_table, target=table, key=key)
+    if update:
+        update_postgres(source = staging_table, target=table, key = key)
+    else:
+       upsert_postgres(source=staging_table, target=table, key=key)
     query_postgres(f"drop table if exists {staging_table}")
 
-
 # load a python df into postgres
-def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=False, key=None):
+def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=False, key=None, update=False):
     print("""🌿 Load a python df into postgres""")
     temp_file_will_be_removed = False
 
@@ -116,7 +118,7 @@ def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=
     if use_upsert:
         if key == None:
             raise ValueError("🤯 executing upsert without providing key")
-        upsert_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table, key=key)
+        upsert_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table, key=key, update=update)
     else:
         copy_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table)
 
@@ -147,6 +149,29 @@ def upsert_postgres(source, target, key):
         where t.{key} is null
     """
     query_postgres(sql)
+
+def update_postgres(source, target, key):
+    df = query_postgres(sql=f'''
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+            AND table_name   = '{target}'
+            and column_name != '{key}'
+        ;'''
+        , columns = ['col'])
+    s = str(df.col.apply(lambda x: f'{x} = s.{x}').to_list())
+    sql_set_string = s.replace("'", '').replace('[','').replace(']','')
+    query_postgres(sql=f'''
+    update {target}
+    set
+
+    {sql_set_string}
+
+    from {source} s
+        where {target}.{key} = s.{key}
+    ;
+    ''')
+
 
 
 def export_postgres(table, csv_filename_with_path):
@@ -336,7 +361,7 @@ def get_contract_meta_data_from_opensea(contract):
         "payout_address",
         "slug"
     ]
-    meta = {"address": contract}
+    meta = {"id": contract}
 
     url = f"https://api.opensea.io/api/v1/asset_contract/{contract}"
     headers = {"X-API-KEY": OPENSEA_API_KEY}

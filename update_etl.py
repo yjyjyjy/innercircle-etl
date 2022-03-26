@@ -197,13 +197,14 @@ def mark_new_contracts():
 
 
 # update the nft contract meta data by calling the OpenSea single asset api https://docs.opensea.io/reference/retrieving-a-single-asset
-def update_collection(pagination=5):
-    result = utl.query_postgres(sql="select address from new_nft_contracts where missing_metadata", columns=["address"])
-    todo_list = result.address.to_list()
+def update_collection(pagination=5, todo_list=None, update=False):
+    if todo_list == None:
+        result = utl.query_postgres(sql="select address from new_nft_contracts where missing_metadata", columns=["id"])
+        todo_list = result.address.to_list()
 
     # output schema
     """
-        "address",
+        "id",
         "name",
         "safelist_request_status",
         "description",
@@ -250,10 +251,10 @@ def update_collection(pagination=5):
                     output = output.append(row)
             time.sleep(wait_time)
         print("🧪🧪🧪 upserting output data")
-        print(output[["address", "name"]])
+        print(output[["id", "name"]])
 
         if output.shape[0] > 0:
-            utl.copy_from_df_to_postgres(df=output, table="collection", use_upsert=True, key="id")
+            utl.copy_from_df_to_postgres(df=output, table="collection", use_upsert=True, key="id", update=update)
         todo_list = [x for x in todo_list if x not in _todo]
 
 
@@ -459,6 +460,11 @@ def update_nft_contract_floor_price(date):
             and timestamp < date('{date}') + interval'1 days'
             and action = 'trade'
             and trade_payment_token in ('ETH', 'WETH')
+            and contract not in (
+                select id
+                from address_metadata
+                where is_special_address
+            )
         group by 1,2
         ;
         --  having count(distinct trx_hash) >= 2  -- having more than 2 trades
@@ -1116,7 +1122,7 @@ def update_circle_collection():
 
 
 def update_post():
-    sql = """
+    utl.query_postgres(sql = """
     insert into post (collection_id, created_at, feed_importance_score)
     select
         source.collection_id
@@ -1152,8 +1158,23 @@ def update_post():
     ) fis
     where post.collection_id = fis.collection_id
     ;
-    """
-    utl.query_postgres(sql=sql)
+    """)
+
+    todo_list = utl.query_postgres(sql='''
+        select c.id
+        from post p
+        join collection c
+            on p.collection_id = c.id
+        where feed_importance_score > 0
+            and (
+                c.last_updated_at < now() - interval '7 days'
+                or c.last_updated_at is null
+                )
+        group by 1
+        ;
+    ''', columns=['id'])['id'].to_list()
+    update_collection(todo_list=todo_list, update=True)
+
 
 def update_address_metadata_is_contract():
 
