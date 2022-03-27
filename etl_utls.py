@@ -9,10 +9,22 @@ import psycopg2 as pg2
 import json
 import requests
 from const import PATHS
+import re
+import snowflake.connector
+from snowflake.connector import connect
+from snowflake.connector import DictCursor
+from snowflake.connector.pandas_tools import write_pandas
+from snowflake.connector.pandas_tools import pd_writer
 
 load_dotenv(".env")
 ABSOLUTE_PATH = os.environ.get("ABSOLUTE_PATH")
 CSV_WAREHOUSE_PATH = os.environ.get("CSV_WAREHOUSE_PATH")
+SNOW_USER=os.environ.get("SNOW_USER")
+SNOW_PASSWORD=os.environ.get("SNOW_PASSWORD")
+SNOW_ACCOUNT=os.environ.get("SNOW_ACCOUNT")
+SNOW_ROLE=os.environ.get("SNOW_ROLE")
+SNOW_WAREHOUSE=os.environ.get("SNOW_WAREHOUSE")
+SNOW_DATABASE=os.environ.get("SNOW_DATABASE")
 RUNNING_IN_CLOUD = os.environ.get("RUNNING_IN_CLOUD") == "True"
 OPENSEA_API_KEY = os.environ.get("OPENSEA_API_KEY")
 OPENSEA_V1_ABI_FILENAME = os.environ.get("OPENSEA_V1_ABI_FILENAME")
@@ -193,7 +205,132 @@ def copy_from_google_bigquery_to_postgres(sql, table, csv_filename_with_path=Non
     copy_from_df_to_postgres(
         df=df, table=table, csv_filename_with_path=csv_filename_with_path, use_upsert=use_upsert, key=key
     )
+####**********************************************************
+#### ****************** Snowflake  ********************
+#### **********************************************************
 
+# Creating connection to snowflake
+def connect_snowflake():
+
+    try:
+        cnn = connect(
+        user=SNOW_USER,
+        password=SNOW_PASSWORD,
+        account=SNOW_ACCOUNT,
+        role=SNOW_ROLE
+
+        )
+        logging.info('Connection created successfully')
+        return cnn
+
+    except:
+        logging.warning('Connection creation unsuccessful')
+
+def set_session():
+    cnn = connect_snowflake()
+    cs = cnn.cursor()
+        #cursor = self.create_snowflake_connection().cursor(DictCursor) here the session is hardcoded
+    try:
+        # cursor.execute(f'USE ROLE {SNOW_ROLE};') Mostly for our purose without this we can fullfill our requirement
+        # cursor.execute(f'USE WAREHOUSE {SNOW_WAREHOUSE};'
+        sql = "use role ACCOUNTADMIN"
+        cs.execute(sql)
+        sql = "use warehouse COMPUTE_WH"  # But in future you want to move to different cluster use its name
+        cs.execute(sql)
+        sql = "use database ANALYTICS"
+        cs.execute(sql)
+        sql = "use schema PUBLIC"
+        cs.execute(sql)
+        return cnn
+    except Exception as error_returned:
+        raise RuntimeError(f'Setting the Role and Warehouse threw error: {error_returned}' )
+
+
+def copy_from_file_to_snowflake_table(csv_filename_with_path, table):
+    cnn = set_session()
+    cs = cnn.cursor()
+    print(f"🌿 Loading {csv_filename_with_path} into snowflake stage at: " + str(datetime.datetime.now()))
+    file = re.findall(r'[A-Za-z0-9_\-\.]+\.[A-Za-z0-9]+$', csv_filename_with_path)
+    try:
+        sql = 'put file://{0} @INNERCIRCLE auto_compress=false'.format(csv_filename_with_path)
+        cs.execute(sql)
+        print(f"🌿🌿 copying data from stage into snowflake {table}:" + str(datetime.datetime.now()))
+        sql = 'copy into {0} from (select c.* from @innercircle/{1} (file_format => D_FILEFORMAT ) c) PURGE =FALSE on_error=continue'.format(
+            table, file[0])
+        cs.execute(sql)
+        print(f"🌿🌿 copy data from stage into snowflake {table}:" + str(datetime.datetime.now()))
+        sql = "create or replace table rejectedrows_{0} as select * from table(validate(ANALYTICS.PUBLIC.{0},job_id=>'_last'))".format(
+            table)
+        cs.execute(sql)
+
+    finally:
+        cs.close()
+    cnn.close()
+
+
+def read_from_snowflake(sql):
+    # A cursor object represents a database cursor for execute and fetch operations
+    cnn = set_session()
+    cs = cnn.cursor()
+    print("🌿🌿 executing query on snowflake tables:" + str(datetime.datetime.now()))
+    try:
+        # Prepare and execute a database command, fetch data into a Pandas DataFrame
+        cs.execute(sql)
+        df = cs.fetch_pandas_all()
+    except Exception as error_returned:
+        raise RuntimeError(
+            f'SQL statement: {sql}\n threw error {error_returned}')
+
+    finally:
+        # Close the cursor
+        cs.close()
+        cnn.close()
+
+    # print(df)
+    return df
+
+def df_to_snowflake(df,table):
+    cnn = set_session()
+    cs = cnn.cursor()
+    print("""🌿 Load a python df into snowflake""")
+    try:
+        write_pandas(
+            conn=cnn,
+            df=df,
+            table_name=table,
+            database='ANALYTICS',
+            schema='PUBLIC')
+    except Exception as e:
+        print("Seems issue in writing to snowflake table", e)
+        raise e
+
+#this is using query and processed data in s3 within table name folder in S3
+def export_from_snowflake_to_s3(sql, table):
+    cnn = set_session()
+    cs = cnn.cursor()
+    s3_date=str(datetime.datetime.today().strftime ('%d%m%Y'))
+    print(f"🌿 Loading snowflake query results into s3/{table}: " + str(datetime.datetime.now()))
+    try:
+        sql = "copy into '@gets3data/{0}/{2}/' from ({1})  file_format=(type=csv COMPRESSION =  NONE)\
+        HEADER = TRUE OVERWRITE = FALSE SINGLE = TRUE".format(table, sql,s3_date)
+        cs.execute(sql)
+
+    finally:
+        cs.close()
+    cnn.close()
+
+def copy_snowflake_internal_stage_local(csv_filename_with_path):
+    cnn = set_session()
+    cs = cnn.cursor()
+    print(f"🌿 Loading all files from snowflake stage to {csv_filename_with_path}: " + str(datetime.datetime.now()))
+    try:
+        sql = 'get @innercircle/ file://{0}'.format(csv_filename_with_path)
+        cs.execute(sql)
+    #         print(f"🌿🌿 copy data from stage into snowflake {table}:" + str(datetime.datetime.now()))
+
+    finally:
+        cs.close()
+    cnn.close()
 
 # **********************************************************
 # ****************** CSV FILE IO ***************************
