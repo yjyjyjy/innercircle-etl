@@ -200,7 +200,7 @@ def mark_new_contracts():
 def update_collection(pagination=5, todo_list=None, update=False):
     if todo_list == None:
         result = utl.query_postgres(sql="select address from new_nft_contracts where missing_metadata", columns=["id"])
-        todo_list = result.address.to_list()
+        todo_list = result.id.to_list()
 
     # output schema
     """
@@ -264,7 +264,7 @@ def update_nft_contract_abi(pagination=5):
     """
 
     result = utl.query_postgres(sql="select address from new_nft_contracts where missing_abi", columns=["address"])
-    todo_list = result.address.to_list()
+    todo_list = result['address'].to_list()
 
     while len(todo_list) > 0:
         print("🦾🦾 todo list len")
