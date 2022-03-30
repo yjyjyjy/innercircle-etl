@@ -59,7 +59,7 @@ def copy_from_google_bigquery_to_postgres(sql, table, csv_filename_with_path=Non
     df = download_from_google_bigquery(sql)
 
     print("⛳️⛳️⛳️ loading into postgres")
-    copy_from_df_to_snowflake(
+    copy_from_df_to_snowflake_table(
         df=df, table=table, csv_filename_with_path=csv_filename_with_path, use_upsert=use_upsert, key=key
     )
 
