@@ -202,3 +202,83 @@ def exports_from_snowflake_to_s3(sql, table):
     finally:
         cur.close()
     conn.close()
+
+# **********************************************************
+# ****************** ETL utils *****************************
+# **********************************************************
+
+# get a list of dates from start_date ('2021-12-24' format) to end_date and return the list reverse if required.
+# The default end_date is the day before the execution date.
+def get_date_list(start_date=None, end_date=None, reverse=False):
+    dim_date = pd.read_csv("dim_dates.csv")
+
+    if end_date == None:  # default end date is yesterday
+        end_date = get_previous_day()
+
+    dim_date = dim_date[dim_date.full_date <= end_date]
+
+    if start_date != None:
+        dim_date = dim_date[dim_date.full_date >= start_date]
+
+    dates = list(dim_date.full_date)
+    dates.sort()
+
+    if reverse:
+        dates.reverse()
+    return dates
+
+def delete_current_day_data(date, table, key="timestamp"):
+    gap = check_table_for_date_gaps(
+        table=table
+        , start_date=date
+        , end_date=date
+        , key=key)
+
+    if len(gap)==0: # there is existing data.
+        query_snowflake(
+            sql = f"delete from {table} where date({key}) = '{date}'"
+        )
+
+def get_previous_day(from_date=None, num_days=1):
+    dim_date = pd.read_csv("dim_dates.csv")
+    if from_date == None:
+        today = datetime.datetime.now().date().strftime("%Y-%m-%d")
+        from_date = today
+    prev_day = dim_date.full_date[dim_date.full_date < from_date].max()
+    if num_days == 1:
+        return prev_day
+    else:
+        return get_previous_day(from_date=prev_day, num_days=num_days-1)
+
+
+# get max(timestamp of existing table)
+def get_terminal_ts(table, end, offset=None, key="timestamp"):
+    if end != "max" and end != "min":
+        raise ValueError("🤯 The end param in get_terminal_ts should be either max or min")
+    offset_string = ""
+    if offset != None:
+        offset_string = f" + interval'{offset}'"
+    sql = f"select cast({end}({key} {offset_string}) as varchar) from {table}"
+    data = query_snowflake(sql, columns=["ts"])
+    ts = data.ts.iloc[0]
+    print("⏱ Terminal ts retrieved: " + str(ts))
+    return ts
+
+def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp"):
+    dates = get_date_list(start_date=start_date, end_date=end_date)
+    end_date_clause = f"and {key} <= date('{end_date}') + interval'1 day'" if end_date != None else ""
+    sql = f"""
+        select cast(date({key}) as varchar) as date
+        from {table}
+        where {key} >= '{start_date}'
+            {end_date_clause}
+        group by 1
+    """
+    uploaded = query_snowflake(sql, columns=["date"])
+    uploaded = uploaded.date.to_list()
+
+    gaps = [date for date in dates if date not in uploaded]
+    gaps.sort()
+    print(f"🦄🦄: {table} gaps:")
+    print(gaps)
+    return gaps
