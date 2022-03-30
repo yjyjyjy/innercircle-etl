@@ -75,5 +75,6 @@ up.update_insider_portfolio() # out of all addresses ever tagged as as insiders,
 up.update_insight_trx()
 up.update_insight()
 up.update_circle_collection()
+up.update_insider_collection_ownership()
 up.update_post()
 up.update_address_metadata_trader_profile()

@@ -1084,7 +1084,6 @@ def update_insight():  # insifght -- insider acquisitions
         ;
     """)
 
-############# SUSPENDED ##################
 def update_circle_collection():
 # contract_to_circle_mappin find new contracts that belongs to each circle
     sql = """
@@ -1120,6 +1119,39 @@ def update_circle_collection():
     """
     utl.query_postgres(sql=sql)
 
+def update_insider_collection_ownership():
+    utl.query_postgres(sql='''
+    truncate table insider_collection_ownership;
+    insert into insider_collection_ownership
+    with ownership as (
+        select
+            i.insider_id
+            , c.id as collection_id
+            , count(distinct o.token_id) as num_tokens
+            , min(last_transferred_at) as oldest_token_collected_at
+            , max(last_transferred_at) as newest_token_collected_at
+        from insider_to_circle_mapping i
+        join nft_ownership o
+            on i.insider_id = o.address
+        join collection c
+            on o.contract = c.id
+        where i.is_current
+            and i.circle_id = 2
+        group by 1,2
+    )
+    select
+        o.*
+        , coalesce(case when action = 'buy' then ins.num_tokens end,0) as num_token_buy
+        , coalesce(case when action = 'sell' then ins.num_tokens end,0) as num_token_sell
+        , coalesce(case when action = 'buy' then ins.num_tokens end,0)
+        - coalesce(case when action = 'sell' then ins.num_tokens end,0) as net_num_token_buy
+    from ownership o
+    left join insight ins
+        on o.insider_id = ins.insider_id
+        and o.collection_id = ins.collection_id
+        and ins.last_traded_at >= now() - interval '3 days'
+    ;
+    ''')
 
 def update_post():
     utl.query_postgres(sql = """

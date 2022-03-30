@@ -330,6 +330,21 @@ create table collection_to_circle_mapping (
 );
 create unique index "collection_to_circle_mapping_unique_idx_collection_circle" ON collection_to_circle_mapping(collection_id, circle_id);
 
+create table insider_collection_ownership (
+	insider_id varchar(100)
+	, collection_id varchar(100)
+	, num_tokens int
+	, oldest_token_collected_at timestamp
+	, newest_token_collected_at timestamp
+	, num_token_buy int
+	, num_token_sell int
+	, net_num_token_buy int
+	, foreign key (collection_id)  references collection(id)
+	, foreign key (insider_id)  references insider(id)
+)
+;
+
+
 create table post (
 	id serial primary key
 	, collection_id varchar not null
