@@ -7,7 +7,7 @@ import logging
 import os
 import pandas as pd
 import requests
-# from const import PATHS
+from const import PATHS # for my test code i commented this line
 import snowflake.connector
 from snowflake.connector import connect
 from snowflake.connector import DictCursor
@@ -24,9 +24,9 @@ SNOW_ACCOUNT=os.environ.get("SNOW_ACCOUNT")
 SNOW_ROLE=os.environ.get("SNOW_ROLE")
 SNOW_WAREHOUSE=os.environ.get("SNOW_WAREHOUSE")
 SNOW_DATABASE=os.environ.get("SNOW_DATABASE")
-# CSV_WAREHOUSE_PATH = os.environ.get("CSV_WAREHOUSE_PATH")
-# OPENSEA_API_KEY = os.environ.get("OPENSEA_API_KEY")
-# OPENSEA_V1_ABI_FILENAME = os.environ.get("OPENSEA_V1_ABI_FILENAME")
+CSV_WAREHOUSE_PATH = os.environ.get("CSV_WAREHOUSE_PATH")
+OPENSEA_API_KEY = os.environ.get("OPENSEA_API_KEY")
+OPENSEA_V1_ABI_FILENAME = os.environ.get("OPENSEA_V1_ABI_FILENAME")
 
 # **********************************************************
 # ****************** Google Bigquery IO ********************
