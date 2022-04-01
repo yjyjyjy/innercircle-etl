@@ -341,6 +341,7 @@ create table insider_collection_ownership (
 	, net_num_token_buy int
 	, foreign key (collection_id)  references collection(id)
 	, foreign key (insider_id)  references insider(id)
+	, primary key (insider_id, collection_id)
 )
 ;
 
