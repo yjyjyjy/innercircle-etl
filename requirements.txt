@@ -7,7 +7,6 @@ base58==2.1.1
 bitarray==1.2.2
 cachetools==4.2.4
 certifi==2021.10.8
-charset-normalizer==2.0.9
 cytoolz==0.11.2
 eth-abi==2.1.1
 eth-account==0.5.6
@@ -42,7 +41,7 @@ pandas==1.3.5
 parsimonious==0.8.1
 proto-plus==1.19.8
 protobuf==3.19.1
-psycopg2 @ file:///tmp/build/80754af9/psycopg2_1612298578530/work
+psycopg2
 pyarrow==6.0.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
@@ -52,15 +51,31 @@ pyrsistent==0.18.0
 python-dateutil==2.8.2
 python-dotenv==0.19.2
 pytz==2021.3
-requests==2.26.0
 rlp==2.0.1
 rsa==4.8
 six==1.16.0
 toolz==0.11.2
 typing-extensions==3.10.0.2
-urllib3==1.26.7
 varint==1.0.2
 web3==5.25.0
 websockets==9.1
 yarl==1.7.2
 zipp==3.7.0
+
+# Snow Flake
+asn1crypto==1.4.0
+certifi==2021.10.8
+cffi==1.15.0
+charset-normalizer==2.0.11
+cryptography==36.0.1
+idna==3.3
+oscrypto==1.2.1
+pycparser==2.21
+pycryptodomex==3.14.0
+PyJWT==2.3.0
+pyOpenSSL==21.0.0
+pytz==2021.3
+requests==2.27.1
+six==1.16.0
+urllib3==1.26.8
+snowflake-connector-python==2.7.4

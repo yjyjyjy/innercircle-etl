@@ -46,7 +46,7 @@ select * from eth_token_transfers where timestamp >= '2022-01-01' and timestamp 
 -- decoded trading information that happened on OpenSea etc.
 create table nft_trades (
 	timestamp timestamp
-	, trx_hash varchar
+	, trx_hash varchar primary key
 	, eth_value numeric
 	, payment_token varchar
 	, price numeric
@@ -54,7 +54,6 @@ create table nft_trades (
 )
 ;
 create index nft_trades_idx_timestamp on nft_trades (timestamp desc);
-create index nft_trades_idx_trx_hash on nft_trades (trx_hash);
 
 -- this table is to trigger backfill for newly identified NFT contracts
 create table new_nft_contracts (
@@ -79,7 +78,8 @@ create table collection (
         medium_username varchar,
         wiki_url varchar,
         payout_address varchar,
-        slug varchar -- not sure what this is
+        slug varchar,
+		last_updated_at timestamp
 );
 
 -- create table nft_contract_abi (
@@ -94,30 +94,58 @@ re: num_tokens_in_the_same_transaction, and eth_value_per_token
 Say I bought 3 NFTs in one transactions for 3 eth: 2 eth for token A; 0.5 eth for token B and C each). There will be three rows in this table with the same trx_hash. The num_tokens_in_the_same_transaction == 3 and eth_value_per_token == 1 for all three rows.
 */
 create table nft_trx_union (
-	timestamp timestamp,
-	trx_hash varchar,
-	contract varchar,
-	token_id varchar,
-	from_address varchar,
-	to_address varchar,
-	num_tokens_in_the_same_transaction int,
-	eth_value_per_token numeric,
-	action varchar,
-	caller_is_receiver BOOLEAN
+	timestamp timestamp
+	, trx_hash varchar
+	, contract varchar
+	, token_id varchar
+	, from_address varchar
+	, to_address varchar
+	, trade_platform varchar
+	, trade_payment_token varchar
+	, num_tokens_in_the_same_transaction int
+	, price_per_token numeric
+	, action varchar --transfer (137249), mint (121408), trade (68903), burn (4431)
+	, caller_is_receiver BOOLEAN -- meaning the wallet received the token initiated the call
 )
 ;
 create index nft_trx_union_idx_timestamp on nft_trx_union (timestamp desc);
-create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
-create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
-create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
-create index nft_trx_union_idx_action on nft_trx_union (action);
+create index nft_trx_union_idx_contract on nft_trx_union (contract);
+-- create index nft_trx_union_idx_contract_token_id on nft_trx_union (contract, token_id desc);
+-- create index nft_trx_union_idx_from_address on nft_trx_union (from_address);
+-- create index nft_trx_union_idx_to_address on nft_trx_union (to_address);
+-- create index nft_trx_union_idx_action on nft_trx_union (action);
 
 create table nft_ownership (
 	contract varchar,
 	token_id varchar,
-	owner varchar,
+	address varchar,
+	last_transferred_at timestamp,
 	PRIMARY KEY(contract, token_id)
 );
+create index nft_ownership_idx_address on nft_ownership (address);
+
+-- backfill nft_ownership
+drop table if exists nft_ownership;
+create table nft_ownership as
+with cet as (
+	select
+		contract
+		, token_id
+		, to_address
+		, timestamp
+		, row_number() over (partition by contract, token_id order by timestamp desc) as rnk
+	from nft_trx_union
+)
+select
+	contract
+	, token_id
+	, to_address as address
+	, timestamp as last_transferred_at
+from cet
+where rnk = 1
+;
+create index nft_ownership_idx_address on nft_ownership (address);
+ALTER TABLE nft_ownership ADD PRIMARY KEY (contract, token_id);
 
 create table nft_contract_floor_price (
 	date date,
@@ -127,84 +155,46 @@ create table nft_contract_floor_price (
 )
 ;
 
-drop table if exists owner_collection_worth;
-create table owner_collection_worth as
-select
-	o.owner
-	, o.contract
-	, p.floor_price_in_eth
-	, count(distinct o.token_id) as collection_value
-from nft_ownership o
-join nft_contract_floor_price p
-	on p.contract = o.contract
-where p.date = '2022-01-03'-- {yesterday}
-group by 1,2,3
-;
+create table past_90_days_trading_roi (
+	address varchar(100) not null
+	, contract varchar(100) not null
+	, buy_date date not null
+	, buy_eth_amount numeric not null
+	, gain numeric not null
+	, roi_pct numeric not null
+	, collection_gain_rank_in_portfolio int not null
+	, total_gain numeric not null
+);
+create index past_90_days_trading_roi_idx_address on past_90_days_trading_roi (address);
+create unique index past_90_days_trading_roi_idx_address_contract on past_90_days_trading_roi (address, contract);
 
-create table owner_collection_total_worth as
-with base as (
-	select
-		o.owner
-		, o.contract
-		, p.floor_price_in_eth
-		, count(distinct o.token_id) as num_tokens
-	from nft_ownership o
-	join nft_contract_floor_price p
-		on p.contract = o.contract
-	where p.date = '2022-01-03'-- {yesterday}
-	group by 1,2,3
-)
-, owner_collection_worth as (
-	select
-		owner
-		, contract
-		, floor_price_in_eth * num_tokens as collection_worth
-	from base
-)
-, owner_collection_worth_ranked as (
-	select
-		owner
-		, contract
-		, collection_worth
-		, row_number() over (partition by owner order by collection_worth desc) as rnk
-	from owner_collection_worth
-)
-, top_collection_weight as (
-	select
-		owner
-		, sum(case when rnk = 1 then collection_worth end)/sum(collection_worth) as top_collection_weight
-	from owner_collection_worth_ranked
-	group by 1
-)
-, owner_worth as (
-	select
-		owner
-		, sum(collection_worth) as total_worth
-	from owner_collection_worth
-	group by 1
-)
-select
-	ocwr.owner
-	, ocwr.contract
-	, ocwr.collection_worth
-	, rnk
-	, total_worth
-from owner_collection_worth_ranked ocwr
-join owner_worth ow
-	on ocwr.owner = ow.owner
-;
+create table insider_past_90_days_trading_roi (
+	insider_id varchar(100) not null
+	, collection_id varchar(100) not null
+	, buy_date date not null
+	, buy_eth_amount numeric not null
+	, gain numeric not null
+	, roi_pct numeric not null
+	, collection_gain_rank_in_portfolio int not null
+	, total_gain numeric not null
+	, foreign key (insider_id)  references insider(id)
+	, foreign key (collection_id)  references collection(id)
+);
+create index insider_past_90_days_trading_roi_idx_insider_id on insider_past_90_days_trading_roi (insider_id);
+create unique index insider_past_90_days_trading_roi_idx_address_contract on insider_past_90_days_trading_roi (insider_id, collection_id);
+
 
 -- mapping logic from insider to circle
 create table insider_to_circle_mapping (
 	insider_id varchar not null
-	, owner_rank int not null
+	, owner_rank int
 	, circle_id int not null
 	, created_at date not null
 	, is_current BOOLEAN not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (circle_id)  references circle(id)
 );
-create unique index "insider_to_circle_mapping_unique_idx_insider_id_circle_id_created_at" ON insider_to_circle_mapping(insider_id, circle_id, created_at);
+create unique index insider_to_circle_mapping_unique_idx_insider_id_circle_id_created_at ON insider_to_circle_mapping(insider_id, circle_id, created_at);
 create index insider_to_circle_mapping_idx_is_current on insider_to_circle_mapping (is_current);
 
 create table circle (
@@ -214,85 +204,153 @@ create table circle (
 
 create table insider (
 	id varchar PRIMARY KEY
+	, public_name_tag varchar
+	, opensea_display_name varchar
+	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
+	, opensea_bio varchar
 	, ens varchar
 	, twitter_username varchar
 	, instagram_username varchar
+	, medium_username varchar
+	, email varchar
+	, website varchar
+	, opensea_user_created_at timestamp
+	, last_updated_at timestamp
 );
 
--- the trade to track how smart a trader is. It's shadow trade because we track the floor price when they enter and exit instead of the real profit/loss. NFT is hard to value with traits considered.
-drop table if exists shadow_trade;
-create table shadow_trade (
-	shadow_trade_id serial primary key
-	, insider_id varchar not null
-	, collection_id varchar not null
-	, collection_name varchar
-	, token_id varchar not null
-	, entry_price numeric not null
-	, entry_floor_price numeric
-	, entry_timestamp timestamp not null
-	, exit_price numeric
-	, exit_timestamp timestamp
-	, latest_price numeric not null
-	, profit_or_loss numeric not null -- profit or loss
-	, foreign key (insider_id) references insider(id)
-	, foreign key (collection_id) references collection(id)
+create table address_metadata (
+	id varchar primary key
+	, public_name_tag varchar
+	, is_contract BOOLEAN
+	, is_special_address boolean
+	, special_address_type varchar
+	, opensea_display_name varchar
+	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
+	, opensea_bio varchar
+	, ens varchar
+	, twitter_username varchar
+	, instagram_username varchar
+	, medium_username varchar
+	, email varchar
+	, website varchar
+	, opensea_user_created_at timestamp
+	, last_updated_at timestamp
 )
 ;
-create unique index "shadow_trade_unique_idx_insider_id_col_id_token_id_entry_ts" ON shadow_trade(insider_id, collection_id, token_id, entry_timestamp);
+create index address_metadata_idx_email on address_metadata (email);
+create index address_metadata_idx_is_contract on address_metadata (is_contract);
+create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
 
-drop table if exists shadow_trade_summary;
-create table shadow_trade_summary (
-	insider_id varchar
-	, collection_id varchar
-	, entry_timestamp timestamp
-	, profit_or_loss numeric
-	, primary key (insider_id, collection_id)
+-- the opensea loading table for the address_metadata
+create table address_metadata_opensea (
+	id varchar primary key
+	, opensea_display_name varchar
+	, opensea_image_url varchar
+	, opensea_banner_image_url varchar
+	, opensea_bio varchar
+	, twitter_username varchar
+	, instagram_username varchar
+	, website varchar
+	, opensea_user_created_at timestamp
+	, last_updated_at timestamp
+)
+;
+
+create table insider_portfolio (
+	insider_id varchar not null
+	, address_rank int
+	, collection_id varchar not null
+	, num_tokens int not null
+	, floor_price_in_eth numeric
+	, collection_worth numeric
+	, collection_rank_in_portfolio int
+	, total_worth numeric
+	, collection_pct_total numeric
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
 )
 ;
+create unique index insider_portfolio_idx_unique on insider_portfolio (insider_id, collection_id, num_tokens);
+
 
 -- get all collection bought or mint by the insiders and the first date for each collection/insider pair
 create table insight_trx (
-	insider_id varchar not null -- eth address
-	, collection_id varchar not null
-	, timestamp timestamp not null
-	, token_id varchar not null
-	, action varchar not null
-	, trx_hash varchar not null
-	, eth_value_per_token numeric not null
-	, nth_trx int not null -- the nth acquisition of the same insider and collection
-	, created_at date not null
+	date date  not null
+	, insider_id varchar(100) not null
+	, action varchar(100) not null
+	, collection_id varchar(100)  not null
+	, floor_price_in_eth numeric
+	, num_tokens int not null
+	, total_eth_amount numeric not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
-);
-create unique index "insight_trx_unique_idx_insider_id_collection_id_nth_trx" ON insight_trx(insider_id, collection_id, token_id, nth_trx);
-create unique index "insight_trx_unique_idx_trx_hash_token_id" ON insight_trx(trx_hash, token_id);
+)
+;
+create unique index insight_trx_unique_idx
+	on insight_trx (
+		date
+		, insider_id
+		, action
+		, collection_id
+	)
+;
 
 create table insight (
 	insider_id varchar not null -- eth address
 	, collection_id varchar not null
-	, started_at timestamp not null
-	, total_eth_spent numeric not null
+	, action varchar not null
+	, num_tokens int not null
+	, total_eth_amount numeric not null
+	, last_traded_at timestamp not null
+	, num_tokens_owned int not null
+	, insight_time_decay numeric not null
+	, past_90_days_trading_gain numeric not null
+	, pct_trades_profitable numeric not null
+	, circle_collection_first_ts timestamp not null
+	, insider_collection_first_ts timestamp not null
+	, circle_collection_first_time_decay numeric not null
+	, insider_collection_first_time_decay numeric not null
+	, feed_importance_score numeric not null
 	, foreign key (insider_id)  references insider(id)
 	, foreign key (collection_id)  references collection(id)
 );
-create unique index "insight_unique_idx_insider_id_collection_id" on insight(insider_id, collection_id);
+create unique index "insight_unique_idx_insider_id_collection_id_action"
+	on insight(insider_id, collection_id, action);
+
 
 -- the logic of how contracts are considered endorsedd by each circle
 create table collection_to_circle_mapping (
 	collection_id varchar not null
 	, circle_id int not null
-	, created_at date not null
+	, started_at date not null
 	, foreign key (collection_id)  references collection(id)
 	, foreign key (circle_id)  references circle(id)
 );
 create unique index "collection_to_circle_mapping_unique_idx_collection_circle" ON collection_to_circle_mapping(collection_id, circle_id);
 
+create table insider_collection_ownership (
+	insider_id varchar(100)
+	, collection_id varchar(100)
+	, num_tokens int
+	, oldest_token_collected_at timestamp
+	, newest_token_collected_at timestamp
+	, num_token_buy int
+	, num_token_sell int
+	, net_num_token_buy int
+	, foreign key (collection_id)  references collection(id)
+	, foreign key (insider_id)  references insider(id)
+	, primary key (insider_id, collection_id)
+)
+;
+
+
 create table post (
 	id serial primary key
 	, collection_id varchar not null
 	, created_at date not null
+	, feed_importance_score numeric not null
 	, foreign key (collection_id) references collection(id)
 );
 
@@ -323,13 +381,6 @@ create index eth_token_transfers_2021_idx_contract on eth_token_transfers_2021 (
 
 create index eth_token_transfers_2022_idx_timestamp on eth_token_transfers_2022 (timestamp desc);
 create index eth_token_transfers_2022_idx_contract on eth_token_transfers_2022 (contract desc);
-
-
-
-
-create index nft_ownership_idx_owner on nft_ownership (owner);
-create index nft_ownership_idx_contract on nft_ownership (contract);
-create index nft_ownership_idx_token_id on nft_ownership (token_id);
 
 create index eth_transactions_idx_timestamp on eth_transactions (timestamp desc);
 create index eth_transactions_idx_trx_hash on eth_transactions (trx_hash desc);

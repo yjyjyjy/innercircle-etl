@@ -37,7 +37,7 @@ def get_metadata(username):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
     }
     proxies = {
-        "https": "https://192.187.126.98:19016",
+        "https": "https://192.187.125.234:19008",
     }
 
     while True:
@@ -61,6 +61,7 @@ def get_metadata(username):
 
         except ProxyError:
             logger.error("Proxy error")
+            print(ProxyError)
             sleep(10)
 
         except:

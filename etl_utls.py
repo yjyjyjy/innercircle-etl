@@ -93,18 +93,22 @@ def copy_from_file_to_postgres(csv_filename_with_path, table):
     query_postgres(sql)
 
 
-def upsert_from_file_to_postgres(csv_filename_with_path, table, key):
+def upsert_from_file_to_postgres(csv_filename_with_path, table, key, update=False):
     print(f"🌿 Upsert into {csv_filename_with_path} into {table} at: " + str(datetime.datetime.now()))
     staging_table = create_staging_table(table)
     copy_from_file_to_postgres(csv_filename_with_path, table=staging_table)
-    upsert_postgres(source=staging_table, target=table, key=key)
+    if update:
+        update_postgres(source = staging_table, target=table, key = key)
+    else:
+       upsert_postgres(source=staging_table, target=table, key=key)
     query_postgres(f"drop table if exists {staging_table}")
 
-
 # load a python df into postgres
-def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=False, key=None):
+def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=False, key=None, update=False):
     print("""🌿 Load a python df into postgres""")
     temp_file_will_be_removed = False
+
+    # create a temp csv file name
     if csv_filename_with_path == None:
         now_str = str(datetime.datetime.now()).replace(" ", "_").replace(":", "_").replace(".", "_")
         csv_filename_with_path = ABSOLUTE_PATH + f"tmp_dataframe_{now_str}.csv"
@@ -114,7 +118,7 @@ def copy_from_df_to_postgres(df, table, csv_filename_with_path=None, use_upsert=
     if use_upsert:
         if key == None:
             raise ValueError("🤯 executing upsert without providing key")
-        upsert_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table, key=key)
+        upsert_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table, key=key, update=update)
     else:
         copy_from_file_to_postgres(csv_filename_with_path=csv_filename_with_path, table=table)
 
@@ -145,6 +149,27 @@ def upsert_postgres(source, target, key):
         where t.{key} is null
     """
     query_postgres(sql)
+
+def update_postgres(source, target, key):
+    df = query_postgres(sql=f'''
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+            AND table_name   = '{target}'
+            and column_name != '{key}'
+        ;'''
+        , columns = ['col'])
+    s = str(df.col.apply(lambda x: f'{x} = s.{x}').to_list())
+    sql_set_string = s.replace("'", '').replace('[','').replace(']','')
+    query_postgres(sql=f'''
+    update {target}
+    set
+    {sql_set_string}
+    from {source} s
+        where {target}.{key} = s.{key}
+    ;
+    ''')
+
 
 
 def export_postgres(table, csv_filename_with_path):
@@ -253,13 +278,28 @@ def get_date_list(start_date=None, end_date=None, reverse=False):
         dates.reverse()
     return dates
 
+def delete_current_day_data(date, table, key="timestamp"):
+    gap = check_table_for_date_gaps(
+        table=table
+        , start_date=date
+        , end_date=date
+        , key=key)
 
-def get_previous_day(from_date=None):
+    if len(gap)==0: # there is existing data.
+        query_postgres(
+            sql = f"delete from {table} where date({key}) = '{date}'"
+        )
+
+def get_previous_day(from_date=None, num_days=1):
     dim_date = pd.read_csv("dim_dates.csv")
     if from_date == None:
         today = datetime.datetime.now().date().strftime("%Y-%m-%d")
         from_date = today
-    return dim_date.full_date[dim_date.full_date < from_date].max()
+    prev_day = dim_date.full_date[dim_date.full_date < from_date].max()
+    if num_days == 1:
+        return prev_day
+    else:
+        return get_previous_day(from_date=prev_day, num_days=num_days-1)
 
 
 # get max(timestamp of existing table)
@@ -277,7 +317,7 @@ def get_terminal_ts(table, end, offset=None, key="timestamp"):
 
 def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp"):
     dates = get_date_list(start_date=start_date, end_date=end_date)
-    end_date_clause = f"and {key} <= '{end_date}'" if end_date != None else ""
+    end_date_clause = f"and {key} <= date('{end_date}') + interval'1 day'" if end_date != None else ""
     sql = f"""
         select cast(date({key}) as varchar) as date
         from {table}
@@ -317,9 +357,9 @@ def get_contract_meta_data_from_opensea(contract):
         "medium_username",
         "wiki_url",
         "payout_address",
-        "slug",
+        "slug"
     ]
-    meta = {"address": contract}
+    meta = {"id": contract}
 
     url = f"https://api.opensea.io/api/v1/asset_contract/{contract}"
     headers = {"X-API-KEY": OPENSEA_API_KEY}
@@ -327,8 +367,9 @@ def get_contract_meta_data_from_opensea(contract):
     status_code = response.status_code
     if status_code != 200:  # logging only
         print(f"🚨 contract {contract} returns non-200 status code: {status_code}")
-    if status_code in (429, 404):  # too many requests let the calling function handle this
-        print("🚨 encounter HTTP error 429 too many requests or 404 page doesn't exist")
+        if status_code in (429, 404):  # too many requests let the calling function handle this
+            print("🚨 encounter HTTP error 429 too many requests or 404 page doesn't exist")
+            return meta, status_code
         return meta, status_code
     try:
         data = json.loads(response.text)
@@ -350,6 +391,9 @@ def get_contract_meta_data_from_opensea(contract):
             for key in collection_keys:
                 if key != "name":
                     meta[key] = collection.get(key, None)
+
+            meta['last_updated_at']=datetime.datetime.now()
+
     except Exception as e:
         raise ValueError("🤯 Error: Received data is not json. Could be network timeout", e, "data:", data)
 

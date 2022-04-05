@@ -1,0 +1,108 @@
+[2022-03-16 18:41:32,182 |   INFO   | user_metadata] Starting
+[2022-03-16 18:41:32,183 |   INFO   | user_metadata] Loaded 1498 usernames
+[2022-03-16 18:41:32,183 |   INFO   | user_metadata] Getting metadata for 0x482914ce89836db864987707ac8d96e965419efc
+[2022-03-16 18:41:34,972 |   INFO   | user_metadata] Getting metadata for 0xe7079eec020ddfc3f1c0abe1d946c55e6ed30eb3
+[2022-03-16 18:41:39,681 |   INFO   | user_metadata] Getting metadata for 0x8bbc693d042cea740e4ff01d7e0efb36110c36bf
+[2022-03-16 18:41:41,043 |  ERROR   | user_metadata] Error getting metadata for 0x8bbc693d042cea740e4ff01d7e0efb36110c36bf
+Traceback (most recent call last):
+  File "user_metadata.py", line 45, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 668, in send
+    history = [resp for resp in gen] if allow_redirects else []
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 668, in <listcomp>
+    history = [resp for resp in gen] if allow_redirects else []
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 239, in resolve_redirects
+    resp = self.send(
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 325, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 146, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 107, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 105, in do_poll
+    return poll_obj.poll(t)
+KeyboardInterrupt
+[2022-03-16 18:41:44,349 | CRITICAL | user_metadata] Fatal error
+Traceback (most recent call last):
+  File "user_metadata.py", line 45, in get_metadata
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 75, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/api.py", line 60, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 533, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 668, in send
+    history = [resp for resp in gen] if allow_redirects else []
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 668, in <listcomp>
+    history = [resp for resp in gen] if allow_redirects else []
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 239, in resolve_redirects
+    resp = self.send(
+  File "/usr/lib/python3/dist-packages/requests/sessions.py", line 646, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python3/dist-packages/requests/adapters.py", line 439, in send
+    resp = conn.urlopen(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 665, in urlopen
+    httplib_response = self._make_request(
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 421, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/usr/lib/python3/dist-packages/urllib3/connectionpool.py", line 416, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/usr/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 325, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 146, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 107, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+  File "/usr/lib/python3/dist-packages/urllib3/util/wait.py", line 105, in do_poll
+    return poll_obj.poll(t)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "user_metadata.py", line 104, in <module>
+    main()
+  File "user_metadata.py", line 96, in main
+    metadata = get_metadata(username)
+  File "user_metadata.py", line 69, in get_metadata
+    sleep(10)
+KeyboardInterrupt
