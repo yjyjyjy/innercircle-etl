@@ -1141,15 +1141,16 @@ def update_insider_collection_ownership():
     )
     select
         o.*
-        , coalesce(case when action = 'buy' then ins.num_tokens end,0) as num_token_buy
-        , coalesce(case when action = 'sell' then ins.num_tokens end,0) as num_token_sell
-        , coalesce(case when action = 'buy' then ins.num_tokens end,0)
-        - coalesce(case when action = 'sell' then ins.num_tokens end,0) as net_num_token_buy
+        , sum(coalesce(case when action = 'buy' then ins.num_tokens end,0)) as num_token_buy
+        , sum(coalesce(case when action = 'sell' then ins.num_tokens end,0)) as num_token_sell
+        , sum(coalesce(case when action = 'buy' then ins.num_tokens end,0))
+        - sum(coalesce(case when action = 'sell' then ins.num_tokens end,0)) as net_num_token_buy
     from ownership o
     left join insight ins
         on o.insider_id = ins.insider_id
         and o.collection_id = ins.collection_id
         and ins.last_traded_at >= now() - interval '3 days'
+	group by 1,2,3,4,5
     ;
     ''')
 
