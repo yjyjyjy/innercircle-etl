@@ -314,40 +314,6 @@ def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp")
     print(gaps)
     return gaps
 
-# **********************************************************
-# ****************** CSV FILE IO ***************************
-# **********************************************************
-
-# get the filenames under a certain path
-def get_all_files_in_path(path):
-    files = glob.glob(path + "*")
-    files.sort()
-    return files
-
-
-# load all files under a path into postgres
-def load_all_local_files(table, path):
-    files = get_all_files_in_path(path)
-    for file in files:
-        print("🦄🦄 copying >> " + file)
-        copy_from_file_to_postgres(table, file)
-
-
-def rename_csv_header_single_file(file, new_columns):
-    print("🪖 renaming " + file.split("/")[-1])
-    with open(file, "r") as f:
-        reader = csv.reader(f)
-        header = next(reader)
-    if header != new_columns:
-        data = pd.read_csv(file)
-        data.columns = new_columns
-        data.to_csv(file, index=False)
-
-
-def rename_csv_header_dataset(table, new_columns):
-    files = glob.glob(CSV_WAREHOUSE_PATH + PATHS[table] + "*")
-    for file in files:
-        rename_csv_header_single_file(file, new_columns)
 
 # **********************************************************
 # ****************** CSV FILE IO ***************************
