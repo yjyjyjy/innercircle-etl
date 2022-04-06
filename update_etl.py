@@ -1223,7 +1223,8 @@ def update_address_metadata_is_contract():
         ;
     ''')
 
-def update_address_metadata_trader_profile():
+def update_address_metadata_trader_profile(complete_update = False):
+    # complete update is to update all missing or stale metadata. It's set to false by default to only update the insiders' metadata
 
     utl.query_postgres(sql='''
         insert into address_metadata (id)
@@ -1237,20 +1238,31 @@ def update_address_metadata_trader_profile():
 
     update_address_metadata_is_contract()
 
-    df = utl.query_postgres(sql='''
-        select
-            m.id
-        from address_metadata m
-        join insight i
-            on m.id = i.insider_id
-        where 1=1 -- i.feed_importance_score > 0
-            and (
-                m.last_updated_at is null
+    if complete_update:
+        df = utl.query_postgres(sql='''
+            select
+                m.id
+            from address_metadata m
+            where m.last_updated_at is null
                 or m.last_updated_at < now() - interval '7 days'
-                )
-        group by 1
-        ;
-        ''', columns=['id'])
+            group by 1
+            ;
+            ''', columns=['id'])
+    else:
+        df = utl.query_postgres(sql='''
+            select
+                m.id
+            from address_metadata m
+            join insight i
+                on m.id = i.insider_id
+            where 1=1 -- i.feed_importance_score > 0
+                and (
+                    m.last_updated_at is null
+                    or m.last_updated_at < now() - interval '7 days'
+                    )
+            group by 1
+            ;
+            ''', columns=['id'])
 
     df.to_csv(f'address_metadata/{ADDRESS_META_TODO_FILE}', index=False, header=False)
 
@@ -1258,6 +1270,9 @@ def update_address_metadata_trader_profile():
     subprocess.call('./cron_exec_address_metadata.sh')
     print(f'💪💪 completed scraping address metadata: {datetime.datetime.now()}')
 
+    load_address_metadata_from_json()
+
+def load_address_metadata_from_json():
     # mw.ADDRESS_META_FINISHED_FILE
     # for now just grab all files and do upsert
     files = glob.glob('./address_metadata/metadata/*')
@@ -1321,14 +1336,19 @@ def update_address_metadata_trader_profile():
 def parse_metadata_json(data):
     meta = {}
     meta['id'] = data['address']
-    meta['opensea_display_name'] = data['displayName'] or data['user']['publicUsername']
+    meta['opensea_display_name'] = data['displayName'] #or data['user']['publicUsername']
     # datetime.datetime.strptime(data['createdDate'].split('.')[0], '%Y-%m-%dT%H:%M:%S') #"createdDate": "2021-03-13T05:48:10.653999",
     meta['opensea_image_url'] = data['imageUrl']
     meta['opensea_banner_image_url'] = data['bannerImageUrl']
     meta['opensea_bio'] = data['bio']
-    meta['twitter_username'] = data['metadata']['twitterUsername']
-    meta['instagram_username'] = data['metadata']['instagramUsername']
-    meta['website'] = data['metadata']['websiteUrl']
+    if data['metadata'] != None:
+        meta['twitter_username'] = data['metadata']['twitterUsername']
+        meta['instagram_username'] = data['metadata']['instagramUsername']
+        meta['website'] = data['metadata']['websiteUrl']
+    else:
+        meta['twitter_username'] = None
+        meta['instagram_username'] = None
+        meta['website'] = None
     meta['opensea_user_created_at'] = data['createdDate']
     meta['last_updated_at'] = datetime.datetime.now()
     return meta
