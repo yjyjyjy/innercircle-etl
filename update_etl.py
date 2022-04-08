@@ -1272,13 +1272,21 @@ def update_address_metadata_trader_profile(complete_update = False):
 
     load_address_metadata_from_json()
 
-def load_address_metadata_from_json():
+def load_address_metadata_from_json(files = None):
     # mw.ADDRESS_META_FINISHED_FILE
     # for now just grab all files and do upsert
-    files = glob.glob('./address_metadata/metadata/*')
-
+    if files == None:
+        files = glob.glob('./address_metadata/metadata/*')
+    counter = 0
     output = pd.DataFrame()
+
     for file in files:
+
+        counter += 1
+        if counter % 1000 == 0:
+            batch_load_address_metadata_from_address_metadata_opensea(output)
+            print(f'{str(counter)} files loaded')
+            output = pd.DataFrame()
 
         with open(file) as json_file:
             data = json.load(json_file)
@@ -1293,6 +1301,10 @@ def load_address_metadata_from_json():
         except:
             print(f"🤯🤯 error parsing address metadata json file: {file}")
 
+    batch_load_address_metadata_from_address_metadata_opensea(output)
+
+
+def batch_load_address_metadata_from_address_metadata_opensea(output):
     utl.query_postgres(sql='truncate table address_metadata_opensea;')
     utl.copy_from_df_to_postgres(df = output, table='address_metadata_opensea', csv_filename_with_path=None, use_upsert=True, key='id')
     utl.query_postgres(sql='''
@@ -1354,5 +1366,69 @@ def parse_metadata_json(data):
     return meta
 
 
-
 # def load_meta_data_from_file():
+
+#define Jaccard Similarity function
+def jaccard(list1, list2):
+    intersection = len(list(set(list1).intersection(list2)))
+    union = (len(list1) + len(list2)) - intersection
+    return float(intersection) / union
+
+# find Jaccard Similarity between the two sets
+# jaccard(a, b)
+
+import itertools
+import numpy as np
+
+def get_pairs(full_list):
+    result = []
+    for subset in itertools.combinations(full_list, 2):
+        result.append(subset)
+    return result
+
+
+def generate_collection_similarity():
+
+    utl.query_postgres(sql='truncate table collection_similarity;')
+
+    df = utl.query_postgres(sql = '''
+        select
+            contract
+            , address
+        from nft_ownership
+        where contract in (
+            select
+                contract
+            from nft_ownership
+            group by 1
+            having count(distinct address) > 500
+        )
+        group by 1,2
+        ;
+    ''', columns=['contract', 'address'])
+
+    pairs = get_pairs(list(df.contract.unique()))
+    total_num_pairs = len(pairs)
+    progress = 0
+    output = pd.DataFrame()
+    for pair in pairs:
+        similarity = jaccard(pair[0], pair[1])
+
+        rows = pd.DataFrame([
+            {'collection_id':pair[0], 'counterpart_collection_id':pair[1], 'similarity':similarity}
+            , {'collection_id':pair[1], 'counterpart_collection_id':pair[0], 'similarity':similarity}
+            ])
+
+        if output.empty:
+            output = rows
+        else:
+            output = output.append(rows)
+        progress += 1
+        if progress % 1000 == 0:
+            print(f"progress: {progress}/{total_num_pairs} ({np.floor(progress/total_num_pairs*1000)/10}%)")
+            utl.copy_from_df_to_postgres(df=output, table = 'collection_similarity')
+            output = pd.DataFrame()
+
+# not enough names >> needle in the hayStack
+# does this shit work for me? I don't want to be a ginne pig
+#

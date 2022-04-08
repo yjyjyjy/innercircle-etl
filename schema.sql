@@ -82,6 +82,24 @@ create table collection (
 		last_updated_at timestamp
 );
 
+create table collection_tag (
+	collection_id varchar(100)
+	, tag varchar(500)
+	, foreign key (collection_id)  references collection(id)
+)
+;
+CREATE UNIQUE INDEX collection_tag_unique_idx_collection_id_tag ON collection_tag (collection_id, tag);
+
+create table collection_similarity (
+	collection_id varchar(100)
+	, counterpart_collection_id varchar(100)
+	, similarity numeric
+	, foreign key (collection_id) references collection(id)
+);
+create unique index collection_similarity_unique_idx_collection_id_counterpart_collection_id on collection_similarity (collection_id, counterpart_collection_id);
+create index collection_similarity_idx_collection_id on collection_similarity (collection_id);
+
+
 -- create table nft_contract_abi (
 -- 	address varchar primary key
 -- 	, abi varchar

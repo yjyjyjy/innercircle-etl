@@ -1,5 +1,7 @@
 import csv
 import datetime
+from email import header
+from operator import index
 from dotenv import load_dotenv
 import glob
 from google.cloud import bigquery
@@ -178,6 +180,18 @@ def export_postgres(table, csv_filename_with_path):
     """
     query_postgres(sql)
 
+def export_twitter_list():
+    df = query_postgres(sql = '''
+    select
+        trim(case
+            when twitter_username like '@%' then right(twitter_username, length(twitter_username) - 1)
+            else twitter_username end) as twitter_username
+    from tmp_export
+    where twitter_username is not null
+    group by 1
+    ;
+    ''', columns=['twitter'])
+    df.to_csv(CSV_WAREHOUSE_PATH+'twitter_name_export'+'.csv', header=False, index=False)
 
 # **********************************************************
 # ****************** Google Bigquery IO ********************
