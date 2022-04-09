@@ -14,3 +14,5 @@ address_metadata/metadata_1/
 address_metadata/metadata_old/
 
 address_metadata/logs/
+twitter_info/
+last_uploaded_timestamp.json
