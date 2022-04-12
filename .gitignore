@@ -4,6 +4,7 @@
 __pycache__/
 .ipynb_checkpoints/
 google_bigquery_credential.json
+last_uploaded_timestamp.json
 
 node_modules/
 
@@ -13,7 +14,8 @@ address_metadata/metadata/
 address_metadata/metadata_1/
 address_metadata/metadata_old/
 address_metadata/twitter_usernames/
-
 address_metadata/logs/
-twitter_info/
-last_uploaded_timestamp.json
+twitter_scraper/scraped_from_api/
+twitter_scraper/twitter_usernames/
+
+

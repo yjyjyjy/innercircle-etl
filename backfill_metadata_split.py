@@ -2,11 +2,9 @@ import etl_utls as utl
 import numpy as np
 df = utl.query_postgres(sql='''
     select
-        m.id
-    from address_metadata m
-    where twitter_username is not null
-        and tw
-    group by 1
+        wallet_address
+    from export_top_1k_vol_nft_collectors
+    where crawled = false
     ;
     ''', columns=['id'])
 
