@@ -1,4 +1,6 @@
 from asyncio import subprocess
+from email import header
+from operator import index
 from address_metadata.address_metadata_worker import ADDRESS_META_TODO_FILE
 import datetime
 import decode_utls as dec
@@ -1271,6 +1273,17 @@ def update_address_metadata_trader_profile(complete_update = False):
     print(f'💪💪 completed scraping address metadata: {datetime.datetime.now()}')
 
     load_address_metadata_from_json()
+
+    utl.query_postgres(sql='''
+        update address_metadata
+        set twitter_username = lower(trim(replace(replace(replace(twitter_username, '@', ''), '#', ''), '/','')))
+        where twitter_username is not null;
+        ''')
+
+    tw = utl.query_postgres(
+        sql='select twitter_username from address_metadata where twitter_username is not null and twitter_username_verifed is null group by 1;'
+        , columns=['twitter_username'])
+    tw.to_csv('address_metadata/twitter_todo.csv', index=False, header=False)
 
 def load_address_metadata_from_json(files = None):
     # mw.ADDRESS_META_FINISHED_FILE

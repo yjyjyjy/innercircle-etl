@@ -255,6 +255,8 @@ create table address_metadata (
 	, website varchar
 	, opensea_user_created_at timestamp
 	, last_updated_at timestamp
+	, twitter_username_verifed boolean
+	, twitter_follower varchar
 )
 ;
 create index address_metadata_idx_email on address_metadata (email);

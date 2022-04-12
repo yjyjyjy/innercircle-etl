@@ -48,7 +48,7 @@ def start_driver():
 
 
 def load_usernames():
-    with open("women_nft_full_universe.csv", "r") as f:
+    with open("twitter_todo.csv", "r") as f:
         usernames = f.read().splitlines()
     return usernames
 

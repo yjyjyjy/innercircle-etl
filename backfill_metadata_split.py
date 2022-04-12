@@ -4,8 +4,8 @@ df = utl.query_postgres(sql='''
     select
         m.id
     from address_metadata m
-    where m.last_updated_at is null
-        or m.last_updated_at < now() - interval '30 days'
+    where twitter_username is not null
+        and tw
     group by 1
     ;
     ''', columns=['id'])

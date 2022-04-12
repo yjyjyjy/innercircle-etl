@@ -1,3 +1,7 @@
+'''
+instead of scraping this one uses twitter api. Better data format but severe rate limit. Doesn't work for now.
+'''
+
 import os
 import sys
 import requests
