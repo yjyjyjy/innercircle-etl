@@ -1,16 +1,18 @@
+from const import PATHS
 import csv
 import datetime
-from email import header
-from operator import index
 from dotenv import load_dotenv
+from email import header
 import glob
 from google.cloud import bigquery
+import json
+from operator import index
 import os
+import subprocess
 import pandas as pd
 import psycopg2 as pg2
-import json
 import requests
-from const import PATHS
+import time
 
 load_dotenv(".env")
 ABSOLUTE_PATH = os.environ.get("ABSOLUTE_PATH")
@@ -172,13 +174,19 @@ def update_postgres(source, target, key):
     ;
     ''')
 
-
-
 def export_postgres(table, csv_filename_with_path):
     sql = f"""
     COPY {table} TO '{csv_filename_with_path}' DELIMITER ',' CSV HEADER;
     """
     query_postgres(sql)
+
+def export_postgres_to_cloud_storage(table):
+    now_str = str(datetime.datetime.now()).replace(" ", "_").replace(":", "_").replace(".", "_")
+    csv_filename_with_path = ABSOLUTE_PATH + f"export_{table}_{now_str}.csv"
+    export_postgres(table, csv_filename_with_path)
+    cmd = f'gsutil cp {csv_filename_with_path} gs://innercircle-datalake/export/'
+    subprocess.run(cmd,  shell=True)
+    os.remove(csv_filename_with_path)
 
 def export_twitter_list():
     df = query_postgres(sql = '''
@@ -347,6 +355,11 @@ def check_table_for_date_gaps(table, start_date, end_date=None, key="timestamp")
     print(f"🦄🦄: {table} gaps:")
     print(gaps)
     return gaps
+
+def get_mod_timestamp(file):
+    modTimesinceEpoc = os.path.getmtime(file)
+    modificationTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modTimesinceEpoc))
+    return modificationTime
 
 
 # **********************************************************

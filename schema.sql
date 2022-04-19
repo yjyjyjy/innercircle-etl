@@ -257,11 +257,32 @@ create table address_metadata (
 	, last_updated_at timestamp
 	, twitter_username_verifed boolean
 	, twitter_follower varchar
+	, discord_username varchar
 )
 ;
 create index address_metadata_idx_email on address_metadata (email);
 create index address_metadata_idx_is_contract on address_metadata (is_contract);
 create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
+
+create table upload_twitter_profile (
+	twitter_username varchar
+	, verified boolean
+	, followers varchar
+	, last_verified_at timestamp
+);
+create unique index upload_twitter_profile_idx_twitter_username on upload_twitter_profile (twitter_username);
+
+create table address_social (
+	address varchar(100)
+	, platform varchar(100)
+	, username varchar
+	, followers int
+	, verified_linkage boolean -- verfied linkage between social accounts to wallets
+	, real_account boolean -- real account or not. Null means unverified where not means it's not a functional account
+	, last_verified_at timestamp
+);
+create unique index address_social_unqiue_idx on address_social (address, platform, username);
+
 
 -- the opensea loading table for the address_metadata
 create table address_metadata_opensea (

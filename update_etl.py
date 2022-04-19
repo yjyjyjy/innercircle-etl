@@ -6,7 +6,9 @@ import datetime
 import decode_utls as dec
 import etl_utls as utl
 import glob
+import itertools
 import json
+import numpy as np
 import os
 import pandas as pd
 import subprocess
@@ -1323,19 +1325,36 @@ def batch_load_address_metadata_from_address_metadata_opensea(output):
     utl.query_postgres(sql='''
         update address_metadata t
         set
-            id = s.id
-            , opensea_display_name = s.opensea_display_name
-            , opensea_image_url = s.opensea_image_url
-            , opensea_banner_image_url = s.opensea_banner_image_url
-            , opensea_bio = s.opensea_bio
-            , twitter_username = s.twitter_username
-            , instagram_username = s.instagram_username
-            , website = s.website
-            , opensea_user_created_at= s.opensea_user_created_at
+            opensea_display_name = coalesce(s.opensea_display_name,t.opensea_display_name)
+            , opensea_image_url = coalesce(s.opensea_image_url,t.opensea_image_url)
+            , opensea_banner_image_url = coalesce(s.opensea_banner_image_url,t.opensea_banner_image_url)
+            , opensea_bio = coalesce(s.opensea_bio, t.opensea_bio)
+            , twitter_username = coalesce(s.twitter_username, t.twitter_username)
+            , instagram_username = coalesce(s.instagram_username, t.instagram_username)
+            , website = coalesce(s.website, t.website)
+            , opensea_user_created_at= coalesce(s.opensea_user_created_at, t.opensea_user_created_at)
             , last_updated_at= s.last_updated_at
         from address_metadata_opensea s
         where s.id = t.id
         ;
+    ''')
+    utl.query_postgres(sql='''
+    insert into address_metadata (
+        id
+        , opensea_display_name
+        , opensea_image_url
+        , opensea_banner_image_url
+        , opensea_bio
+        , twitter_username
+        , instagram_username
+        , website
+        , opensea_user_created_at
+        , last_updated_at)
+    select s.*
+    from address_metadata_opensea s
+    left join address_metadata t
+        on s.id = t.id
+    where t.id is null;
     ''')
 
     # move data into insider table which is a production table serving Next.js
@@ -1378,8 +1397,26 @@ def parse_metadata_json(data):
     meta['last_updated_at'] = datetime.datetime.now()
     return meta
 
+def upload_twitter_profile_json(csv_path=None):
+    # upload the twitter profile (profile confirmed? number of followers into the db)
+    tmp = pd.DataFrame()
+    if csv_path == None:
+        csv_path = './twitter_scraper/twitter_usernames/'
 
-# def load_meta_data_from_file():
+    files = glob.glob(csv_path + '*.json')
+    for file in files:
+        data = pd.read_json(file, lines=True)
+        data['twitter_username'] = file.split('/')[-1].replace('.json', '')
+        data['last_verfied_at'] = utl.get_mod_timestamp(file)
+        data = data[['twitter_username', 'valid', 'followers', 'last_verfied_at']]
+        tmp = tmp.append(data, ignore_index = True)
+
+    utl.query_postgres(sql='truncate upload_twitter_profile;')
+    utl.copy_from_df_to_postgres(df=tmp, table='upload_twitter_profile')
+
+
+
+########## project similarity ###############
 
 #define Jaccard Similarity function
 def jaccard(list1, list2):
@@ -1390,8 +1427,6 @@ def jaccard(list1, list2):
 # find Jaccard Similarity between the two sets
 # jaccard(a, b)
 
-import itertools
-import numpy as np
 
 def get_pairs(full_list):
     result = []

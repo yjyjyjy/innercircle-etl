@@ -27,7 +27,7 @@ PROXY_LIST = [
 script_name = os.path.basename(__file__)
 script_number = script_name.split('.')[0][-1]
 
-# cd /home/junyuyang/etl/address_metadata;/usr/bin/python3 mass_0.py
+# cd /home/junyuyang/etl/address_metadata;/usr/bin/python3 mass_9.py
 ADDRESS_META_TODO_FILE = f'todo_{script_number}.csv'
 proxy = PROXY_LIST[int(script_number)]
 

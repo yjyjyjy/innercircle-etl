@@ -1,6 +1,6 @@
+import etl_utls as utl
 import glob
 import json
-import os
 import pandas as pd
 import time
 import update_etl as up
@@ -9,16 +9,11 @@ import numpy as np
 
 LAST_UPLOADED_TIMESTAMP_FILENAME = 'last_uploaded_timestamp.json'
 
-def get_mod_timestamp(file):
-    modTimesinceEpoc = os.path.getmtime(file)
-    modificationTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modTimesinceEpoc))
-    return modificationTime
-
 
 while True:
     files = glob.glob('address_metadata/metadata/*')
     df = pd.DataFrame(files, columns = ['filename'])
-    df['mod_timestamp']=df.filename.apply(lambda x: get_mod_timestamp(x))
+    df['mod_timestamp']=df.filename.apply(lambda x: utl.get_mod_timestamp(x))
     df = df.sort_values(by='mod_timestamp')
 
     if len(glob.glob(LAST_UPLOADED_TIMESTAMP_FILENAME)) > 0:

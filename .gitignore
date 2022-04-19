@@ -17,5 +17,5 @@ address_metadata/twitter_usernames/
 address_metadata/logs/
 twitter_scraper/scraped_from_api/
 twitter_scraper/twitter_usernames/
-
+twitter_scraper/twitter_usernames_wsd/
 
