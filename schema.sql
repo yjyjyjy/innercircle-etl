@@ -82,6 +82,24 @@ create table collection (
 		last_updated_at timestamp
 );
 
+create table collection_tag (
+	collection_id varchar(100)
+	, tag varchar(500)
+	, foreign key (collection_id)  references collection(id)
+)
+;
+CREATE UNIQUE INDEX collection_tag_unique_idx_collection_id_tag ON collection_tag (collection_id, tag);
+
+create table collection_similarity (
+	collection_id varchar(100)
+	, counterpart_collection_id varchar(100)
+	, similarity numeric
+	, foreign key (collection_id) references collection(id)
+);
+create unique index collection_similarity_unique_idx_collection_id_counterpart_collection_id on collection_similarity (collection_id, counterpart_collection_id);
+create index collection_similarity_idx_collection_id on collection_similarity (collection_id);
+
+
 -- create table nft_contract_abi (
 -- 	address varchar primary key
 -- 	, abi varchar
@@ -237,11 +255,34 @@ create table address_metadata (
 	, website varchar
 	, opensea_user_created_at timestamp
 	, last_updated_at timestamp
+	, twitter_username_verifed boolean
+	, twitter_follower varchar
+	, discord_username varchar
 )
 ;
 create index address_metadata_idx_email on address_metadata (email);
 create index address_metadata_idx_is_contract on address_metadata (is_contract);
 create index address_metadata_idx_is_special_address on address_metadata (is_special_address);
+
+create table upload_twitter_profile (
+	twitter_username varchar
+	, verified boolean
+	, followers varchar
+	, last_verified_at timestamp
+);
+create unique index upload_twitter_profile_idx_twitter_username on upload_twitter_profile (twitter_username);
+
+create table address_social (
+	address varchar(100)
+	, platform varchar(100)
+	, username varchar
+	, followers int
+	, verified_linkage boolean -- verfied linkage between social accounts to wallets
+	, real_account boolean -- real account or not. Null means unverified where not means it's not a functional account
+	, last_verified_at timestamp
+);
+create unique index address_social_unqiue_idx on address_social (address, platform, username);
+
 
 -- the opensea loading table for the address_metadata
 create table address_metadata_opensea (

@@ -1,10 +1,14 @@
 from asyncio import subprocess
+from email import header
+from operator import index
 from address_metadata.address_metadata_worker import ADDRESS_META_TODO_FILE
 import datetime
 import decode_utls as dec
 import etl_utls as utl
 import glob
+import itertools
 import json
+import numpy as np
 import os
 import pandas as pd
 import subprocess
@@ -1223,7 +1227,8 @@ def update_address_metadata_is_contract():
         ;
     ''')
 
-def update_address_metadata_trader_profile():
+def update_address_metadata_trader_profile(complete_update = False):
+    # complete update is to update all missing or stale metadata. It's set to false by default to only update the insiders' metadata
 
     utl.query_postgres(sql='''
         insert into address_metadata (id)
@@ -1237,20 +1242,31 @@ def update_address_metadata_trader_profile():
 
     update_address_metadata_is_contract()
 
-    df = utl.query_postgres(sql='''
-        select
-            m.id
-        from address_metadata m
-        join insight i
-            on m.id = i.insider_id
-        where 1=1 -- i.feed_importance_score > 0
-            and (
-                m.last_updated_at is null
+    if complete_update:
+        df = utl.query_postgres(sql='''
+            select
+                m.id
+            from address_metadata m
+            where m.last_updated_at is null
                 or m.last_updated_at < now() - interval '7 days'
-                )
-        group by 1
-        ;
-        ''', columns=['id'])
+            group by 1
+            ;
+            ''', columns=['id'])
+    else:
+        df = utl.query_postgres(sql='''
+            select
+                m.id
+            from address_metadata m
+            join insight i
+                on m.id = i.insider_id
+            where 1=1 -- i.feed_importance_score > 0
+                and (
+                    m.last_updated_at is null
+                    or m.last_updated_at < now() - interval '7 days'
+                    )
+            group by 1
+            ;
+            ''', columns=['id'])
 
     df.to_csv(f'address_metadata/{ADDRESS_META_TODO_FILE}', index=False, header=False)
 
@@ -1258,12 +1274,34 @@ def update_address_metadata_trader_profile():
     subprocess.call('./cron_exec_address_metadata.sh')
     print(f'💪💪 completed scraping address metadata: {datetime.datetime.now()}')
 
+    load_address_metadata_from_json()
+
+    utl.query_postgres(sql='''
+        update address_metadata
+        set twitter_username = lower(trim(replace(replace(replace(twitter_username, '@', ''), '#', ''), '/','')))
+        where twitter_username is not null;
+        ''')
+
+    tw = utl.query_postgres(
+        sql='select twitter_username from address_metadata where twitter_username is not null and twitter_username_verifed is null group by 1;'
+        , columns=['twitter_username'])
+    tw.to_csv('address_metadata/twitter_todo.csv', index=False, header=False)
+
+def load_address_metadata_from_json(files = None):
     # mw.ADDRESS_META_FINISHED_FILE
     # for now just grab all files and do upsert
-    files = glob.glob('./address_metadata/metadata/*')
-
+    if files == None:
+        files = glob.glob('./address_metadata/metadata/*')
+    counter = 0
     output = pd.DataFrame()
+
     for file in files:
+
+        counter += 1
+        if counter % 1000 == 0:
+            batch_load_address_metadata_from_address_metadata_opensea(output)
+            print(f'{str(counter)} files loaded')
+            output = pd.DataFrame()
 
         with open(file) as json_file:
             data = json.load(json_file)
@@ -1278,24 +1316,45 @@ def update_address_metadata_trader_profile():
         except:
             print(f"🤯🤯 error parsing address metadata json file: {file}")
 
+    batch_load_address_metadata_from_address_metadata_opensea(output)
+
+
+def batch_load_address_metadata_from_address_metadata_opensea(output):
     utl.query_postgres(sql='truncate table address_metadata_opensea;')
     utl.copy_from_df_to_postgres(df = output, table='address_metadata_opensea', csv_filename_with_path=None, use_upsert=True, key='id')
     utl.query_postgres(sql='''
         update address_metadata t
         set
-            id = s.id
-            , opensea_display_name = s.opensea_display_name
-            , opensea_image_url = s.opensea_image_url
-            , opensea_banner_image_url = s.opensea_banner_image_url
-            , opensea_bio = s.opensea_bio
-            , twitter_username = s.twitter_username
-            , instagram_username = s.instagram_username
-            , website = s.website
-            , opensea_user_created_at= s.opensea_user_created_at
+            opensea_display_name = coalesce(s.opensea_display_name,t.opensea_display_name)
+            , opensea_image_url = coalesce(s.opensea_image_url,t.opensea_image_url)
+            , opensea_banner_image_url = coalesce(s.opensea_banner_image_url,t.opensea_banner_image_url)
+            , opensea_bio = coalesce(s.opensea_bio, t.opensea_bio)
+            , twitter_username = coalesce(s.twitter_username, t.twitter_username)
+            , instagram_username = coalesce(s.instagram_username, t.instagram_username)
+            , website = coalesce(s.website, t.website)
+            , opensea_user_created_at= coalesce(s.opensea_user_created_at, t.opensea_user_created_at)
             , last_updated_at= s.last_updated_at
         from address_metadata_opensea s
         where s.id = t.id
         ;
+    ''')
+    utl.query_postgres(sql='''
+    insert into address_metadata (
+        id
+        , opensea_display_name
+        , opensea_image_url
+        , opensea_banner_image_url
+        , opensea_bio
+        , twitter_username
+        , instagram_username
+        , website
+        , opensea_user_created_at
+        , last_updated_at)
+    select s.*
+    from address_metadata_opensea s
+    left join address_metadata t
+        on s.id = t.id
+    where t.id is null;
     ''')
 
     # move data into insider table which is a production table serving Next.js
@@ -1321,18 +1380,103 @@ def update_address_metadata_trader_profile():
 def parse_metadata_json(data):
     meta = {}
     meta['id'] = data['address']
-    meta['opensea_display_name'] = data['displayName'] or data['user']['publicUsername']
+    meta['opensea_display_name'] = data['displayName'] #or data['user']['publicUsername']
     # datetime.datetime.strptime(data['createdDate'].split('.')[0], '%Y-%m-%dT%H:%M:%S') #"createdDate": "2021-03-13T05:48:10.653999",
     meta['opensea_image_url'] = data['imageUrl']
     meta['opensea_banner_image_url'] = data['bannerImageUrl']
     meta['opensea_bio'] = data['bio']
-    meta['twitter_username'] = data['metadata']['twitterUsername']
-    meta['instagram_username'] = data['metadata']['instagramUsername']
-    meta['website'] = data['metadata']['websiteUrl']
+    if data['metadata'] != None:
+        meta['twitter_username'] = data['metadata']['twitterUsername']
+        meta['instagram_username'] = data['metadata']['instagramUsername']
+        meta['website'] = data['metadata']['websiteUrl']
+    else:
+        meta['twitter_username'] = None
+        meta['instagram_username'] = None
+        meta['website'] = None
     meta['opensea_user_created_at'] = data['createdDate']
     meta['last_updated_at'] = datetime.datetime.now()
     return meta
 
+def upload_twitter_profile_json(csv_path=None):
+    # upload the twitter profile (profile confirmed? number of followers into the db)
+    tmp = pd.DataFrame()
+    if csv_path == None:
+        csv_path = './twitter_scraper/twitter_usernames/'
+
+    files = glob.glob(csv_path + '*.json')
+    for file in files:
+        data = pd.read_json(file, lines=True)
+        data['twitter_username'] = file.split('/')[-1].replace('.json', '')
+        data['last_verfied_at'] = utl.get_mod_timestamp(file)
+        data = data[['twitter_username', 'valid', 'followers', 'last_verfied_at']]
+        tmp = tmp.append(data, ignore_index = True)
+
+    utl.query_postgres(sql='truncate upload_twitter_profile;')
+    utl.copy_from_df_to_postgres(df=tmp, table='upload_twitter_profile')
 
 
-# def load_meta_data_from_file():
+
+########## project similarity ###############
+
+#define Jaccard Similarity function
+def jaccard(list1, list2):
+    intersection = len(list(set(list1).intersection(list2)))
+    union = (len(list1) + len(list2)) - intersection
+    return float(intersection) / union
+
+# find Jaccard Similarity between the two sets
+# jaccard(a, b)
+
+
+def get_pairs(full_list):
+    result = []
+    for subset in itertools.combinations(full_list, 2):
+        result.append(subset)
+    return result
+
+
+def generate_collection_similarity():
+
+    utl.query_postgres(sql='truncate table collection_similarity;')
+
+    df = utl.query_postgres(sql = '''
+        select
+            contract
+            , address
+        from nft_ownership
+        where contract in (
+            select
+                contract
+            from nft_ownership
+            group by 1
+            having count(distinct address) > 500
+        )
+        group by 1,2
+        ;
+    ''', columns=['contract', 'address'])
+
+    pairs = get_pairs(list(df.contract.unique()))
+    total_num_pairs = len(pairs)
+    progress = 0
+    output = pd.DataFrame()
+    for pair in pairs:
+        similarity = jaccard(pair[0], pair[1])
+
+        rows = pd.DataFrame([
+            {'collection_id':pair[0], 'counterpart_collection_id':pair[1], 'similarity':similarity}
+            , {'collection_id':pair[1], 'counterpart_collection_id':pair[0], 'similarity':similarity}
+            ])
+
+        if output.empty:
+            output = rows
+        else:
+            output = output.append(rows)
+        progress += 1
+        if progress % 1000 == 0:
+            print(f"progress: {progress}/{total_num_pairs} ({np.floor(progress/total_num_pairs*1000)/10}%)")
+            utl.copy_from_df_to_postgres(df=output, table = 'collection_similarity')
+            output = pd.DataFrame()
+
+# not enough names >> needle in the hayStack
+# does this shit work for me? I don't want to be a ginne pig
+#

@@ -4,5 +4,5 @@ import etl_utls as utl
 ################  Three source tables  ################
 # transactions
 
-
-up.update_eth_transactions(date='2022-03-30')
+# up.load_address_metadata_from_json()
+up.update_address_metadata_trader_profile(complete_update = True)

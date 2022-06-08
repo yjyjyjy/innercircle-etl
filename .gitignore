@@ -4,10 +4,18 @@
 __pycache__/
 .ipynb_checkpoints/
 google_bigquery_credential.json
+last_uploaded_timestamp.json
 
 node_modules/
 
 crontab
 log.txt
 address_metadata/metadata/
+address_metadata/metadata_1/
+address_metadata/metadata_old/
+address_metadata/twitter_usernames/
 address_metadata/logs/
+twitter_scraper/scraped_from_api/
+twitter_scraper/twitter_usernames/
+twitter_scraper/twitter_usernames_wsd/
+
