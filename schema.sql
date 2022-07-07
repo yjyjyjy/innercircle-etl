@@ -16,6 +16,7 @@ schemas that for the production website
 drop table user_profile;
 create table user_profile (
 	id serial primary key
+	, user_id varchar not null
 	, handle varchar not null
 	, profile_name varchar not null
 	, profile_picture varchar
